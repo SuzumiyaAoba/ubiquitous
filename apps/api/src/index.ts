@@ -2,6 +2,7 @@ import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { logger } from 'hono/logger';
 import { db, terms } from './db';
+import contextsRouter from './routes/contexts';
 
 const app = new Hono();
 
@@ -18,6 +19,9 @@ app.get('/health', (c) => {
 app.get('/api', (c) => {
   return c.json({ message: 'Ubiquitous Language System API' });
 });
+
+// Mount routers
+app.route('/api/contexts', contextsRouter);
 
 // Terms endpoints
 app.get('/api/terms', async (c) => {
