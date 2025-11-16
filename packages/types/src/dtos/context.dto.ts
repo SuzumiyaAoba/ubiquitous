@@ -13,8 +13,8 @@ export interface UpdateContextDto {
 export interface ContextWithTerms {
   id: string;
   name: string;
-  description: string;
-  terms: Term[];
+  description: string | null;
+  terms: any[];  // TODO: Use proper Term type once schema is aligned
   createdAt: Date;
   updatedAt: Date;
 }
