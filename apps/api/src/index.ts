@@ -1,6 +1,8 @@
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { logger } from 'hono/logger';
+import { serve } from '@hono/node-server';
+import 'dotenv/config';
 import { db, terms } from './db';
 
 const app = new Hono();
@@ -30,11 +32,11 @@ app.get('/api/terms', async (c) => {
   }
 });
 
-const port = process.env.PORT || 3001;
+const port = Number(process.env.PORT) || 3001;
 
-console.log(`Server is running on port ${port}`);
+console.log(`Server is running on http://localhost:${port}`);
 
-export default {
-  port,
+serve({
   fetch: app.fetch,
-};
+  port,
+});
