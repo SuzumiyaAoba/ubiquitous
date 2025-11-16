@@ -57,9 +57,10 @@
 - [ ] 測定指標のベースライン取得
 
 ### Phase 1: MVP設計
-- [ ] コア機能の定義
-- [ ] 技術スタックの選定
-- [ ] アーキテクチャ設計
+- [x] コア機能の定義
+- [x] 技術スタックの選定
+- [x] アーキテクチャ設計
+- [x] プロジェクト構造のセットアップ
 - [ ] プロトタイプ作成
 
 ### Phase 2: 開発
@@ -71,6 +72,51 @@
 - [ ] パイロット運用
 - [ ] KPIモニタリング
 - [ ] 組織全体への展開
+
+## 🛠️ 技術構成
+
+### モノレポ構造
+このプロジェクトはTurborepoを使用したモノレポ構成です：
+
+```
+├── apps/
+│   ├── api/          # Honoバックエンド API
+│   └── web/          # Next.jsフロントエンド
+└── packages/
+    └── types/        # 共有TypeScript型定義
+```
+
+### 技術スタック
+- **フロントエンド**: Next.js 14 (App Router), React 18, TypeScript
+- **バックエンド**: Hono, TypeScript
+- **データベース**: PostgreSQL
+- **検索エンジン**: MeiliSearch
+- **AI統合**: OpenAI API
+- **ビルドツール**: Turborepo
+
+### セットアップ方法
+
+詳細は [PROJECT_SETUP.md](./PROJECT_SETUP.md) を参照してください。
+
+```bash
+# 依存関係のインストール
+npm install
+
+# 環境変数の設定
+cp apps/api/.env.example apps/api/.env
+cp apps/web/.env.example apps/web/.env
+
+# 共有型パッケージのビルド
+npm run build --workspace=@ubiquitous/types
+
+# 開発サーバーの起動
+npm run dev
+```
+
+### 設計ドキュメント
+- [要求仕様書](./.kiro/specs/ubiquitous-language-system/requirements.md)
+- [設計書](./.kiro/specs/ubiquitous-language-system/design.md)
+- [実装計画](./.kiro/specs/ubiquitous-language-system/tasks.md)
 
 ## 📚 参考資料
 
