@@ -1,18 +1,18 @@
 # 実装計画
 
-- [ ] 1. プロジェクト構造とコア設定のセットアップ
+- [x] 1. プロジェクト構造とコア設定のセットアップ
   - Next.jsとHonoのモノレポ構造を作成
   - TypeScript設定ファイルを構成
   - 共有型定義パッケージを作成
   - _要求: 1.1, 3.1_
 
 - [ ] 2. データベースとスキーマの実装
-  - [ ] 2.1 PostgreSQLデータベース接続を設定
+  - [x] 2.1 PostgreSQLデータベース接続を設定
     - データベース接続プールを実装
     - 環境変数による設定管理
     - _要求: 1.1, 3.1_
-  
-  - [ ] 2.2 データベーススキーマを作成
+
+  - [x] 2.2 データベーススキーマを作成
     - BoundedContext、Term、TermHistory、TermRelationship、TermProposal、DiscussionThread、Comment、Review、UserLearning、AIAnalysisテーブルを定義
     - 適切なインデックスと制約を設定
     - マイグレーションスクリプトを作成
