@@ -5,6 +5,7 @@ import { serve } from '@hono/node-server';
 import 'dotenv/config';
 import { db, terms, testConnection, closeConnection } from './db';
 import { validateDbConfig } from './db/config';
+import { contextsRouter } from './routes/contexts.routes';
 
 const app = new Hono();
 
@@ -22,7 +23,10 @@ app.get('/api', (c) => {
   return c.json({ message: 'Ubiquitous Language System API' });
 });
 
-// Terms endpoints
+// Mount context routes
+app.route('/api/contexts', contextsRouter);
+
+// Terms endpoints (temporary, will be refactored later)
 app.get('/api/terms', async (c) => {
   try {
     const allTerms = await db.select().from(terms);

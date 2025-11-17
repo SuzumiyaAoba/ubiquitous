@@ -12,8 +12,8 @@
     "db:studio": "drizzle-kit studio"
   },
   "dependencies": {
-    "@ubiquitous/types": "*",
     "@hono/node-server": "^1.8.0",
+    "@ubiquitous/types": "*",
     "dotenv": "^16.4.0",
     "drizzle-kit": "^0.31.7",
     "drizzle-orm": "^0.44.7",
@@ -22,7 +22,7 @@
     "postgres": "^3.4.0"
   },
   "devDependencies": {
-    "@types/node": "^20.11.0",
+    "@types/node": "^20.19.25",
     "drizzle-kit": "^0.20.0",
     "tsx": "^4.7.0",
     "typescript": "^5.3.0"
