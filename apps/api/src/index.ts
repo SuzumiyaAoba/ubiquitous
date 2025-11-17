@@ -3,9 +3,10 @@ import { cors } from 'hono/cors';
 import { logger } from 'hono/logger';
 import { serve } from '@hono/node-server';
 import 'dotenv/config';
-import { db, terms, testConnection, closeConnection } from './db';
+import { testConnection, closeConnection } from './db';
 import { validateDbConfig } from './db/config';
 import { contextsRouter } from './routes/contexts.routes';
+import { termsRouter } from './routes/terms.routes';
 
 const app = new Hono();
 
@@ -23,19 +24,9 @@ app.get('/api', (c) => {
   return c.json({ message: 'Ubiquitous Language System API' });
 });
 
-// Mount context routes
+// Mount routers
 app.route('/api/contexts', contextsRouter);
-
-// Terms endpoints (temporary, will be refactored later)
-app.get('/api/terms', async (c) => {
-  try {
-    const allTerms = await db.select().from(terms);
-    return c.json(allTerms);
-  } catch (error) {
-    console.error('Error fetching terms:', error);
-    return c.json({ error: 'Failed to fetch terms' }, 500);
-  }
-});
+app.route('/api/terms', termsRouter);
 
 const port = Number(process.env.PORT) || 3001;
 
