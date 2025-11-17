@@ -3,7 +3,8 @@ import { cors } from 'hono/cors';
 import { logger } from 'hono/logger';
 import { serve } from '@hono/node-server';
 import 'dotenv/config';
-import { db, terms } from './db';
+import { db, terms, testConnection, closeConnection } from './db';
+import { validateDbConfig } from './db/config';
 
 const app = new Hono();
 
@@ -34,9 +35,40 @@ app.get('/api/terms', async (c) => {
 
 const port = Number(process.env.PORT) || 3001;
 
-console.log(`Server is running on http://localhost:${port}`);
+// Initialize database connection
+async function startServer() {
+  try {
+    validateDbConfig();
+    const isConnected = await testConnection();
+    
+    if (!isConnected) {
+      console.error('Failed to connect to database. Exiting...');
+      process.exit(1);
+    }
+    
+    console.log(`Server is running on http://localhost:${port}`);
+    
+    serve({
+      fetch: app.fetch,
+      port,
+    });
+  } catch (error) {
+    console.error('Failed to start server:', error);
+    process.exit(1);
+  }
+}
 
-serve({
-  fetch: app.fetch,
-  port,
+// Graceful shutdown
+process.on('SIGTERM', async () => {
+  console.log('SIGTERM signal received: closing HTTP server');
+  await closeConnection();
+  process.exit(0);
 });
+
+process.on('SIGINT', async () => {
+  console.log('SIGINT signal received: closing HTTP server');
+  await closeConnection();
+  process.exit(0);
+});
+
+startServer();
