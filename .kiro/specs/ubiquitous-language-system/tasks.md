@@ -286,22 +286,27 @@
     - GET /api/code-analysis/:id/report - レポート取得
     - _要求: 6.1, 6.4_
 
-- [ ] 12. 分析とメトリクス機能の実装
-  - [ ] 12.1 AnalyticsServiceを実装
+- [x] 12. 分析とメトリクス機能の実装
+  - [x] 12.1 AnalyticsServiceを実装
     - ユーザーアクティビティのトラッキング
     - アクティブユーザー数の計算
     - カバレッジ率の計算
     - 最も閲覧・検索された用語の集計
     - _要求: 8.1, 8.2, 8.3_
-  
-  - [ ] 12.2 メトリクスエクスポート機能を実装
+
+  - [x] 12.2 メトリクスエクスポート機能を実装
     - CSV形式でのエクスポート
     - JSON形式でのエクスポート
     - _要求: 8.5_
-  
-  - [ ] 12.3 分析APIエンドポイントを作成
-    - GET /api/analytics/metrics - メトリクス取得
-    - GET /api/analytics/export - メトリクスエクスポート
+
+  - [x] 12.3 分析APIエンドポイントを作成
+    - GET /api/analytics/metrics - 全メトリクス取得
+    - GET /api/analytics/metrics/system - システムメトリクス取得
+    - GET /api/analytics/metrics/user-activity - ユーザーアクティビティメトリクス取得
+    - GET /api/analytics/metrics/coverage - カバレッジメトリクス取得
+    - GET /api/analytics/export - メトリクスエクスポート（JSON/CSV）
+    - GET /api/analytics/top-proposers - 最も活発な提案者取得
+    - GET /api/analytics/top-reviewers - 最も活発なレビュアー取得
     - _要求: 8.4, 8.5_
 
 - [ ] 13. エクスポート/インポート機能の実装
