@@ -141,25 +141,44 @@
     - GET /api/relationships/hierarchy - 階層取得
     - _要求: 7.1, 7.3, 7.4_
 
-- [ ] 7. 議論と承認プロセスの実装
-  - [ ] 7.1 TermProposal、DiscussionThread、Commentエンティティを実装
-    - 各モデルクラスとリポジトリを作成
+- [x] 7. 議論と承認プロセスの実装
+  - [x] 7.1 TermProposal、DiscussionThread、Commentエンティティを実装
+    - TermProposalリポジトリとリポジトリを作成
+    - DiscussionThreadとCommentリポジトリを作成
+    - ステータス管理機能（pending/approved/rejected/on_hold）
+    - スレッド・コメント関係の管理
     - _要求: 10.1_
-  
-  - [ ] 7.2 DiscussionServiceを実装
-    - 用語候補の提案機能
+
+  - [x] 7.2 DiscussionServiceを実装
+    - 用語候補の提案機能（重複チェック付き）
     - 議論スレッドの作成とコメント追加
     - 承認・却下・保留の処理
-    - 承認時の用語登録と履歴保持
+    - 承認時の用語自動登録と履歴保持
+    - コメント権限チェック（自分のコメントのみ編集/削除可能）
+    - クローズされたスレッドへのコメント防止
     - _要求: 10.1, 10.2, 10.3, 10.4_
-  
-  - [ ] 7.3 議論と承認APIエンドポイントを作成
+
+  - [x] 7.3 議論と承認APIエンドポイントを作成
     - POST /api/proposals - 用語候補提案
-    - POST /api/proposals/:id/approve - 承認
-    - POST /api/proposals/:id/reject - 却下
-    - POST /api/threads - スレッド作成
-    - POST /api/threads/:id/comments - コメント追加
-    - GET /api/threads/:id - スレッド取得
+    - GET /api/proposals - 提案一覧取得（ステータスフィルタ）
+    - GET /api/proposals/:id - 提案取得
+    - PUT /api/proposals/:id - 提案更新
+    - POST /api/proposals/:id/approve - 承認（用語作成）
+    - POST /api/proposals/:id/reject - 却下（理由必須）
+    - POST /api/proposals/:id/hold - 保留
+    - DELETE /api/proposals/:id - 提案削除
+    - POST /api/discussions/threads - スレッド作成
+    - GET /api/discussions/threads - スレッド一覧取得
+    - GET /api/discussions/threads/:id - スレッド取得
+    - PUT /api/discussions/threads/:id - スレッド更新
+    - POST /api/discussions/threads/:id/close - スレッドクローズ
+    - POST /api/discussions/threads/:id/reopen - スレッド再開
+    - DELETE /api/discussions/threads/:id - スレッド削除
+    - POST /api/discussions/comments - コメント追加
+    - GET /api/discussions/threads/:threadId/comments - コメント取得
+    - GET /api/discussions/comments/:id - コメント取得
+    - PUT /api/discussions/comments/:id - コメント更新
+    - DELETE /api/discussions/comments/:id - コメント削除
     - _要求: 10.1, 10.2, 10.3, 10.4_
 
 - [ ] 8. 見直しサイクル管理の実装
