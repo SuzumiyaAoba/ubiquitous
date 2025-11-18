@@ -9,6 +9,8 @@ import { contextsRouter } from './routes/contexts.routes';
 import { termsRouter } from './routes/terms.routes';
 import { searchRouter } from './routes/search.routes';
 import { relationshipsRouter } from './routes/relationships.routes';
+import { proposalsRouter } from './routes/proposals.routes';
+import { discussionsRouter } from './routes/discussions.routes';
 import { termService } from './services/term.service';
 import { searchService } from './services/search.service';
 
@@ -36,6 +38,8 @@ app.route('/api/contexts', contextsRouter);
 app.route('/api/terms', termsRouter);
 app.route('/api/search', searchRouter);
 app.route('/api/relationships', relationshipsRouter);
+app.route('/api/proposals', proposalsRouter);
+app.route('/api/discussions', discussionsRouter);
 
 const port = Number(process.env.PORT) || 3001;
 
