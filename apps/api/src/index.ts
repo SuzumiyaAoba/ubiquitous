@@ -7,6 +7,12 @@ import { testConnection, closeConnection } from './db';
 import { validateDbConfig } from './db/config';
 import { contextsRouter } from './routes/contexts.routes';
 import { termsRouter } from './routes/terms.routes';
+import { searchRouter } from './routes/search.routes';
+import { termService } from './services/term.service';
+import { searchService } from './services/search.service';
+
+// Set up search service integration with term service
+termService.setSearchService(searchService);
 
 const app = new Hono();
 
@@ -27,6 +33,7 @@ app.get('/api', (c) => {
 // Mount routers
 app.route('/api/contexts', contextsRouter);
 app.route('/api/terms', termsRouter);
+app.route('/api/search', searchRouter);
 
 const port = Number(process.env.PORT) || 3001;
 

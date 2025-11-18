@@ -2,6 +2,43 @@ import { termRepository, CreateTermDto, UpdateTermDto, AddTermToContextDto } fro
 import { termHistoryRepository } from '../repositories/term-history.repository';
 
 export class TermService {
+  private searchService: any = null;
+
+  /**
+   * Set search service (to avoid circular dependency)
+   */
+  setSearchService(service: any) {
+    this.searchService = service;
+  }
+
+  /**
+   * Sync term to search index if search service is available
+   */
+  private async syncToSearchIndex(termId: string) {
+    if (this.searchService) {
+      try {
+        await this.searchService.indexTerm(termId);
+      } catch (error) {
+        console.error('Failed to sync term to search index:', error);
+        // Don't throw - search sync is not critical
+      }
+    }
+  }
+
+  /**
+   * Remove term from search index if search service is available
+   */
+  private async removeFromSearchIndex(termId: string) {
+    if (this.searchService) {
+      try {
+        await this.searchService.removeTermFromIndex(termId);
+      } catch (error) {
+        console.error('Failed to remove term from search index:', error);
+        // Don't throw - search sync is not critical
+      }
+    }
+  }
+
   /**
    * Create a new term
    */
@@ -13,6 +50,9 @@ export class TermService {
     }
 
     const term = await termRepository.create(data);
+
+    // Sync to search index
+    await this.syncToSearchIndex(term.id);
 
     return term;
   }
@@ -99,6 +139,9 @@ export class TermService {
       });
     }
 
+    // Sync to search index
+    await this.syncToSearchIndex(id);
+
     return updated;
   }
 
@@ -109,11 +152,18 @@ export class TermService {
     // Check if term exists
     await this.getTermById(id);
 
+    let result;
     if (permanent) {
-      return await termRepository.delete(id);
+      result = await termRepository.delete(id);
+      // Remove from search index on permanent delete
+      await this.removeFromSearchIndex(id);
     } else {
-      return await termRepository.softDelete(id);
+      result = await termRepository.softDelete(id);
+      // Update search index (deprecated status)
+      await this.syncToSearchIndex(id);
     }
+
+    return result;
   }
 
   /**
@@ -143,6 +193,9 @@ export class TermService {
       changedBy,
       changeReason: `Added to context ${data.contextId}`,
     });
+
+    // Sync to search index
+    await this.syncToSearchIndex(data.termId);
 
     return termContext;
   }
@@ -183,6 +236,9 @@ export class TermService {
       changeReason: `Updated definition in context ${contextId}`,
     });
 
+    // Sync to search index
+    await this.syncToSearchIndex(termId);
+
     return updated;
   }
 
@@ -196,7 +252,12 @@ export class TermService {
       throw new Error('Term not found in this context');
     }
 
-    return await termRepository.removeFromContext(termId, contextId);
+    const result = await termRepository.removeFromContext(termId, contextId);
+
+    // Sync to search index
+    await this.syncToSearchIndex(termId);
+
+    return result;
   }
 
   /**
