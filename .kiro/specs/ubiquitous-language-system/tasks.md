@@ -265,25 +265,27 @@
     - GET /api/onboarding/can-learn/:userId/:termId - 学習可能チェック
     - _要求: 5.1, 5.2, 5.3, 5.4_
 
-- [ ] 11. コード分析機能の実装
-  - [ ] 11.1 CodeAnalysisエンティティとリポジトリを実装
+- [x] 11. コード分析機能の実装
+  - [x] 11.1 CodeAnalysisエンティティとリポジトリを実装
     - CodeAnalysisモデルクラスを作成
     - 分析結果の保存機能
     - _要求: 6.1_
-  
-  - [ ] 11.2 コード要素抽出機能を実装
-    - TypeScript/JavaScriptパーサーを使用したクラス名、メソッド名、変数名の抽出
+
+  - [x] 11.2 コード要素抽出機能を実装
+    - Regex-based extraction for classes, methods, and variables
+    - TypeScript/JavaScript code element identification
     - _要求: 6.2_
-  
-  - [ ] 11.3 用語マッチング機能を実装
+
+  - [x] 11.3 用語マッチング機能を実装
     - 抽出要素と登録用語の比較
-    - 一致率の計算
-    - リネーム提案の生成
+    - 一致率の計算（Levenshtein距離ベース）
+    - リネーム提案の生成（類似度スコア付き）
+    - CamelCase aware matching
     - _要求: 6.3, 6.4, 6.5_
-  
-  - [ ] 11.4 コード分析APIエンドポイントを作成
-    - POST /api/code-analysis/upload - コードアップロード
-    - GET /api/code-analysis/:id/report - レポート取得
+
+  - [x] 11.4 コード分析APIエンドポイントを作成
+    - POST /api/code-analysis/upload - コードアップロードと分析
+    - GET /api/code-analysis/:id/report - 分析レポート取得
     - _要求: 6.1, 6.4_
 
 - [x] 12. 分析とメトリクス機能の実装
