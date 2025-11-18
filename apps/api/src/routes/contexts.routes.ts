@@ -114,13 +114,15 @@ contextsRouter.put('/:id', async (c) => {
     console.error('Error updating context:', error);
     const message = error instanceof Error ? error.message : 'Failed to update context';
 
-    let status = 500;
     if (error instanceof Error) {
-      if (error.message.includes('not found')) status = 404;
-      else if (error.message.includes('already exists')) status = 409;
+      if (error.message.includes('not found')) {
+        return c.json({ error: message }, 404);
+      } else if (error.message.includes('already exists')) {
+        return c.json({ error: message }, 409);
+      }
     }
 
-    return c.json({ error: message }, status as any);
+    return c.json({ error: message }, 500);
   }
 });
 
@@ -140,7 +142,9 @@ contextsRouter.delete('/:id', async (c) => {
   } catch (error) {
     console.error('Error deleting context:', error);
     const message = error instanceof Error ? error.message : 'Failed to delete context';
-    const status = error instanceof Error && error.message.includes('not found') ? 404 : 500;
-    return c.json({ error: message }, status as any);
+    if (error instanceof Error && error.message.includes('not found')) {
+      return c.json({ error: message }, 404);
+    }
+    return c.json({ error: message }, 500);
   }
 });

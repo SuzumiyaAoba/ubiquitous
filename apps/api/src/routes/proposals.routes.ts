@@ -41,13 +41,15 @@ proposalsRouter.post('/', async (c) => {
     console.error('Error creating proposal:', error);
     const message = error instanceof Error ? error.message : 'Failed to create proposal';
 
-    let status = 500;
     if (error instanceof Error) {
-      if (error.message.includes('not found')) status = 404;
-      else if (error.message.includes('already exists')) status = 409;
+      if (error.message.includes('not found')) {
+        return c.json({ error: message }, 404);
+      } else if (error.message.includes('already exists')) {
+        return c.json({ error: message }, 409);
+      }
     }
 
-    return c.json({ error: message }, status as any);
+    return c.json({ error: message }, 500);
   }
 });
 
@@ -126,13 +128,15 @@ proposalsRouter.put('/:id', async (c) => {
     console.error('Error updating proposal:', error);
     const message = error instanceof Error ? error.message : 'Failed to update proposal';
 
-    let status = 500;
     if (error instanceof Error) {
-      if (error.message.includes('not found')) status = 404;
-      else if (error.message.includes('Cannot update')) status = 400;
+      if (error.message.includes('not found')) {
+        return c.json({ error: message }, 404);
+      } else if (error.message.includes('Cannot update')) {
+        return c.json({ error: message }, 400);
+      }
     }
 
-    return c.json({ error: message }, status as any);
+    return c.json({ error: message }, 500);
   }
 });
 
@@ -162,13 +166,15 @@ proposalsRouter.post('/:id/approve', async (c) => {
     console.error('Error approving proposal:', error);
     const message = error instanceof Error ? error.message : 'Failed to approve proposal';
 
-    let status = 500;
     if (error instanceof Error) {
-      if (error.message.includes('not found')) status = 404;
-      else if (error.message.includes('already') || error.message.includes('Cannot')) status = 400;
+      if (error.message.includes('not found')) {
+        return c.json({ error: message }, 404);
+      } else if (error.message.includes('already') || error.message.includes('Cannot')) {
+        return c.json({ error: message }, 400);
+      }
     }
 
-    return c.json({ error: message }, status as any);
+    return c.json({ error: message }, 500);
   }
 });
 
@@ -198,13 +204,15 @@ proposalsRouter.post('/:id/reject', async (c) => {
     console.error('Error rejecting proposal:', error);
     const message = error instanceof Error ? error.message : 'Failed to reject proposal';
 
-    let status = 500;
     if (error instanceof Error) {
-      if (error.message.includes('not found')) status = 404;
-      else if (error.message.includes('Cannot') || error.message.includes('already')) status = 400;
+      if (error.message.includes('not found')) {
+        return c.json({ error: message }, 404);
+      } else if (error.message.includes('Cannot') || error.message.includes('already')) {
+        return c.json({ error: message }, 400);
+      }
     }
 
-    return c.json({ error: message }, status as any);
+    return c.json({ error: message }, 500);
   }
 });
 
@@ -226,13 +234,15 @@ proposalsRouter.post('/:id/hold', async (c) => {
     console.error('Error putting proposal on hold:', error);
     const message = error instanceof Error ? error.message : 'Failed to put proposal on hold';
 
-    let status = 500;
     if (error instanceof Error) {
-      if (error.message.includes('not found')) status = 404;
-      else if (error.message.includes('Can only')) status = 400;
+      if (error.message.includes('not found')) {
+        return c.json({ error: message }, 404);
+      } else if (error.message.includes('Can only')) {
+        return c.json({ error: message }, 400);
+      }
     }
 
-    return c.json({ error: message }, status as any);
+    return c.json({ error: message }, 500);
   }
 });
 

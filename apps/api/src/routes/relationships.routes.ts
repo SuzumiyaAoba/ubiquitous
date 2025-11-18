@@ -50,14 +50,17 @@ relationshipsRouter.post('/', async (c) => {
     console.error('Error creating relationship:', error);
     const message = error instanceof Error ? error.message : 'Failed to create relationship';
 
-    let status = 500;
     if (error instanceof Error) {
-      if (error.message.includes('not found')) status = 404;
-      else if (error.message.includes('already exists')) status = 409;
-      else if (error.message.includes('circular dependency') || error.message.includes('itself')) status = 400;
+      if (error.message.includes('not found')) {
+        return c.json({ error: message }, 404);
+      } else if (error.message.includes('already exists')) {
+        return c.json({ error: message }, 409);
+      } else if (error.message.includes('circular dependency') || error.message.includes('itself')) {
+        return c.json({ error: message }, 400);
+      }
     }
 
-    return c.json({ error: message }, status as any);
+    return c.json({ error: message }, 500);
   }
 });
 
@@ -117,13 +120,15 @@ relationshipsRouter.put('/:id', async (c) => {
     console.error('Error updating relationship:', error);
     const message = error instanceof Error ? error.message : 'Failed to update relationship';
 
-    let status = 500;
     if (error instanceof Error) {
-      if (error.message.includes('not found')) status = 404;
-      else if (error.message.includes('circular dependency')) status = 400;
+      if (error.message.includes('not found')) {
+        return c.json({ error: message }, 404);
+      } else if (error.message.includes('circular dependency')) {
+        return c.json({ error: message }, 400);
+      }
     }
 
-    return c.json({ error: message }, status as any);
+    return c.json({ error: message }, 500);
   }
 });
 

@@ -267,13 +267,15 @@ discussionsRouter.post('/comments', async (c) => {
     console.error('Error adding comment:', error);
     const message = error instanceof Error ? error.message : 'Failed to add comment';
 
-    let status = 500;
     if (error instanceof Error) {
-      if (error.message.includes('not found')) status = 404;
-      else if (error.message.includes('closed')) status = 400;
+      if (error.message.includes('not found')) {
+        return c.json({ error: message }, 404);
+      } else if (error.message.includes('closed')) {
+        return c.json({ error: message }, 400);
+      }
     }
 
-    return c.json({ error: message }, status as any);
+    return c.json({ error: message }, 500);
   }
 });
 
@@ -359,13 +361,15 @@ discussionsRouter.put('/comments/:id', async (c) => {
     console.error('Error updating comment:', error);
     const message = error instanceof Error ? error.message : 'Failed to update comment';
 
-    let status = 500;
     if (error instanceof Error) {
-      if (error.message.includes('not found')) status = 404;
-      else if (error.message.includes('only')) status = 403;
+      if (error.message.includes('not found')) {
+        return c.json({ error: message }, 404);
+      } else if (error.message.includes('only')) {
+        return c.json({ error: message }, 403);
+      }
     }
 
-    return c.json({ error: message }, status as any);
+    return c.json({ error: message }, 500);
   }
 });
 
@@ -395,12 +399,14 @@ discussionsRouter.delete('/comments/:id', async (c) => {
     console.error('Error deleting comment:', error);
     const message = error instanceof Error ? error.message : 'Failed to delete comment';
 
-    let status = 500;
     if (error instanceof Error) {
-      if (error.message.includes('not found')) status = 404;
-      else if (error.message.includes('only')) status = 403;
+      if (error.message.includes('not found')) {
+        return c.json({ error: message }, 404);
+      } else if (error.message.includes('only')) {
+        return c.json({ error: message }, 403);
+      }
     }
 
-    return c.json({ error: message }, status as any);
+    return c.json({ error: message }, 500);
   }
 });
