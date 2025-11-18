@@ -22,7 +22,7 @@ export interface ImportOptions {
 
 export class ImportService {
   /**
-   * Import data from JSON
+   * JSONからデータをインポート
    */
   async importFromJSON(jsonData: string, options: ImportOptions = {}): Promise<ImportResult> {
     const result: ImportResult = {
@@ -38,27 +38,27 @@ export class ImportService {
     };
 
     try {
-      // Parse JSON
+      // JSONをパース
       const data: ExportData = JSON.parse(jsonData);
 
-      // Validate structure
+      // 構造を検証
       const validationErrors = this.validateImportData(data);
       if (validationErrors.length > 0) {
         result.errors.push(...validationErrors);
         return result;
       }
 
-      // If validation only, return here
+      // 検証のみの場合、ここで返す
       if (options.validateOnly) {
         result.success = true;
         result.warnings.push('Validation only - no data was imported');
         return result;
       }
 
-      // Import contexts first
+      // 最初にコンテキストをインポート
       for (const contextData of data.contexts || []) {
         try {
-          // Check if context already exists
+          // コンテキストが既に存在するかを確認
           const existing = await contextRepository.findByName(contextData.name);
 
           if (existing && options.skipExisting) {
@@ -79,10 +79,10 @@ export class ImportService {
         }
       }
 
-      // Import terms
+      // タームをインポート
       for (const termData of data.terms || []) {
         try {
-          // Check if term already exists
+          // ターム既に存在するかを確認
           const existing = await termRepository.existsByName(termData.name);
 
           if (existing && options.skipExisting) {
@@ -104,10 +104,10 @@ export class ImportService {
         }
       }
 
-      // Import term-context relationships
+      // ターム-コンテキスト関係をインポート
       for (const tcData of data.termContexts || []) {
         try {
-          // Find term and context by name (since IDs might be different)
+          // 名前でターム とコンテキストを検索（IDが異なる可能性があるため）
           const term = await termRepository.searchByName(tcData.termName);
           const context = await contextRepository.findByName(tcData.contextName);
 
@@ -125,7 +125,7 @@ export class ImportService {
             continue;
           }
 
-          // Check if already exists
+          // 既に存在するかを確認
           const exists = await termRepository.existsInContext(term[0].id, context.id);
 
           if (exists && options.skipExisting) {
@@ -152,10 +152,10 @@ export class ImportService {
         }
       }
 
-      // Import relationships
+      // 関係をインポート
       for (const relData of data.relationships || []) {
         try {
-          // Find source and target terms
+          // ソースタームとターゲットタームを検索
           const sourceTerms = await termRepository.searchByName(relData.sourceTerm || '');
           const targetTerms = await termRepository.searchByName(relData.targetTerm || '');
 
@@ -166,7 +166,7 @@ export class ImportService {
             continue;
           }
 
-          // Check if relationship already exists
+          // 関係が既に存在するかを確認
           const existing = await termRelationshipRepository.findByTerms(
             sourceTerms[0].id,
             targetTerms[0].id,
@@ -206,7 +206,7 @@ export class ImportService {
   }
 
   /**
-   * Validate import data structure
+   * インポートデータ構造を検証
    */
   private validateImportData(data: any): string[] {
     const errors: string[] = [];
@@ -228,7 +228,7 @@ export class ImportService {
       errors.push('Missing or invalid terms array');
     }
 
-    // Validate contexts
+    // コンテキストを検証
     if (Array.isArray(data.contexts)) {
       data.contexts.forEach((context: any, index: number) => {
         if (!context.name) {
@@ -237,7 +237,7 @@ export class ImportService {
       });
     }
 
-    // Validate terms
+    // タームを検証
     if (Array.isArray(data.terms)) {
       data.terms.forEach((term: any, index: number) => {
         if (!term.name) {
@@ -250,7 +250,7 @@ export class ImportService {
   }
 
   /**
-   * Validate JSON data without importing
+   * インポートせずにJSONデータを検証
    */
   async validateJSON(jsonData: string): Promise<ImportResult> {
     return this.importFromJSON(jsonData, { validateOnly: true });

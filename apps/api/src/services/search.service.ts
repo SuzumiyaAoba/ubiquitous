@@ -6,13 +6,13 @@ import { eq } from 'drizzle-orm';
 
 export class SearchService {
   /**
-   * Convert a term from database to search document
+   * データベースのターム検索ドキュメントに変換
    */
   private async termToSearchDocument(termId: string): Promise<TermSearchDocument | null> {
     const term = await termRepository.findById(termId);
     if (!term) return null;
 
-    // Get all contexts for this term
+    // このターム用のすべてのコンテキストを取得
     const termContextList = await db
       .select({
         contextId: termContexts.contextId,
@@ -41,7 +41,7 @@ export class SearchService {
   }
 
   /**
-   * Index a single term
+   * 単一のターム をインデックス
    */
   async indexTerm(termId: string): Promise<void> {
     const searchDoc = await this.termToSearchDocument(termId);
@@ -51,7 +51,7 @@ export class SearchService {
   }
 
   /**
-   * Index all terms in the database
+   * データベース内のすべてのターム をインデックス
    */
   async indexAllTerms(): Promise<number> {
     const allTerms = await termRepository.findAll();
@@ -72,14 +72,14 @@ export class SearchService {
   }
 
   /**
-   * Remove a term from search index
+   * 検索インデックスからターム削除
    */
   async removeTermFromIndex(termId: string): Promise<void> {
     await meiliSearchClient.deleteTerm(termId);
   }
 
   /**
-   * Search terms with full-text search
+   * 全文検索でターム検索
    */
   async searchTerms(
     query: string,
@@ -90,7 +90,7 @@ export class SearchService {
       status?: string;
     }
   ) {
-    // Build filter
+    // フィルターを構築
     const filters: string[] = [];
     if (options?.contextId) {
       filters.push(`contexts.contextId = "${options.contextId}"`);
@@ -118,7 +118,7 @@ export class SearchService {
   }
 
   /**
-   * Get search suggestions (autocomplete)
+   * 検索提案を取得（オートコンプリート）
    */
   async getSuggestions(query: string, limit: number = 5) {
     const results = await meiliSearchClient.searchTerms(query, {
@@ -133,7 +133,7 @@ export class SearchService {
   }
 
   /**
-   * Rebuild entire search index
+   * 検索インデックス全体を再構築
    */
   async rebuildIndex(): Promise<number> {
     await meiliSearchClient.clearTermsIndex();
@@ -141,14 +141,14 @@ export class SearchService {
   }
 
   /**
-   * Get search index statistics
+   * 検索インデックス統計を取得
    */
   async getIndexStats() {
     return await meiliSearchClient.getIndexStats();
   }
 
   /**
-   * Test MeiliSearch connection
+   * MeiliSearch接続をテスト
    */
   async testConnection(): Promise<boolean> {
     return await meiliSearchClient.testConnection();

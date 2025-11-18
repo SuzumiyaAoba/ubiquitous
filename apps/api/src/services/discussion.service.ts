@@ -17,19 +17,19 @@ import { termHistoryRepository } from '../repositories/term-history.repository';
 import { contextRepository } from '../repositories/context.repository';
 
 export class DiscussionService {
-  // ===== Proposal Operations =====
+  // ===== 提案操作 =====
 
   /**
-   * Create a new term proposal
+   * 新しいターム提案を作成
    */
   async createProposal(data: CreateTermProposalDto) {
-    // Validate that the bounded context exists
+    // バウンドされたコンテキストが存在することを検証
     const context = await contextRepository.findById(data.boundedContextId);
     if (!context) {
       throw new Error(`Bounded context with ID "${data.boundedContextId}" not found`);
     }
 
-    // Check if a term with the same name already exists
+    // 同じ名前のターム既に存在するかを確認
     const existingTerm = await termRepository.existsByName(data.name);
     if (existingTerm) {
       throw new Error(
@@ -41,7 +41,7 @@ export class DiscussionService {
   }
 
   /**
-   * Get a proposal by ID
+   * IDで提案を取得
    */
   async getProposalById(id: string) {
     const proposal = await termProposalRepository.findById(id);
@@ -52,7 +52,7 @@ export class DiscussionService {
   }
 
   /**
-   * Get all proposals
+   * すべての提案を取得
    */
   async getAllProposals(status?: ProposalStatus) {
     if (status) {
@@ -62,10 +62,10 @@ export class DiscussionService {
   }
 
   /**
-   * Get proposals by context
+   * コンテキスト別に提案を取得
    */
   async getProposalsByContext(contextId: string) {
-    // Validate context exists
+    // コンテキストが存在することを検証
     const context = await contextRepository.findById(contextId);
     if (!context) {
       throw new Error(`Bounded context with ID "${contextId}" not found`);
@@ -75,18 +75,18 @@ export class DiscussionService {
   }
 
   /**
-   * Update a proposal
+   * 提案を更新
    */
   async updateProposal(id: string, data: UpdateTermProposalDto) {
-    // Check if proposal exists
+    // 提案が存在するかを確認
     const proposal = await this.getProposalById(id);
 
-    // Can only update pending or on_hold proposals
+    // 保留中またはホールド中の提案のみを更新できます
     if (proposal.status === 'approved' || proposal.status === 'rejected') {
       throw new Error(`Cannot update a proposal that has been ${proposal.status}`);
     }
 
-    // If updating context, validate it exists
+    // コンテキストを更新する場合、存在することを検証
     if (data.boundedContextId) {
       const context = await contextRepository.findById(data.boundedContextId);
       if (!context) {
@@ -98,12 +98,12 @@ export class DiscussionService {
   }
 
   /**
-   * Approve a proposal and create the term
+   * 提案を承認してタームを作成
    */
   async approveProposal(id: string, approvedBy: string) {
     const proposal = await this.getProposalById(id);
 
-    // Can only approve pending or on_hold proposals
+    // 保留中またはホールド中の提案のみを承認できます
     if (proposal.status === 'approved') {
       throw new Error('Proposal has already been approved');
     }
@@ -111,7 +111,7 @@ export class DiscussionService {
       throw new Error('Cannot approve a rejected proposal');
     }
 
-    // Create the term from the proposal
+    // 提案からタームを作成
     const termData: CreateTermDto = {
       name: proposal.name,
       description: proposal.definition,
@@ -120,14 +120,14 @@ export class DiscussionService {
 
     const term = await termRepository.create(termData);
 
-    // Add the term to the context with the proposal's definition
+    // 提案の定義を使用してコンテキストに追加
     await termRepository.addToContext({
       termId: term.id,
       contextId: proposal.boundedContextId,
       definition: proposal.definition,
     });
 
-    // Create initial history record
+    // 初期履歴レコードを作成
     await termHistoryRepository.create({
       termId: term.id,
       version: 1,
@@ -138,7 +138,7 @@ export class DiscussionService {
       changeReason: `Created from proposal ${id}`,
     });
 
-    // Update proposal status
+    // 提案ステータスを更新
     await termProposalRepository.approve(id, approvedBy);
 
     return {
@@ -148,12 +148,12 @@ export class DiscussionService {
   }
 
   /**
-   * Reject a proposal
+   * 提案を却下
    */
   async rejectProposal(id: string, rejectionReason: string) {
     const proposal = await this.getProposalById(id);
 
-    // Can only reject pending or on_hold proposals
+    // 保留中またはホールド中の提案のみを却下できます
     if (proposal.status === 'approved') {
       throw new Error('Cannot reject an approved proposal');
     }
@@ -169,12 +169,12 @@ export class DiscussionService {
   }
 
   /**
-   * Put a proposal on hold
+   * 提案をホールドにする
    */
   async putProposalOnHold(id: string) {
     const proposal = await this.getProposalById(id);
 
-    // Can only put pending proposals on hold
+    // 保留中の提案のみをホールドにできます
     if (proposal.status !== 'pending') {
       throw new Error('Can only put pending proposals on hold');
     }
@@ -183,27 +183,27 @@ export class DiscussionService {
   }
 
   /**
-   * Delete a proposal
+   * 提案を削除
    */
   async deleteProposal(id: string) {
-    // Check if proposal exists
+    // 提案が存在するかを確認
     await this.getProposalById(id);
 
     return await termProposalRepository.delete(id);
   }
 
-  // ===== Discussion Thread Operations =====
+  // ===== ディスカッションスレッド操作 =====
 
   /**
-   * Create a new discussion thread
+   * 新しいディスカッションスレッドを作成
    */
   async createThread(data: CreateDiscussionThreadDto) {
-    // Validate that either termId or proposalId is provided
+    // termIdまたはproposalIdのいずれかが提供されることを検証
     if (!data.termId && !data.proposalId) {
       throw new Error('Either termId or proposalId must be provided');
     }
 
-    // Validate term or proposal exists
+    // タームまたは提案が存在することを検証
     if (data.termId) {
       const term = await termRepository.findById(data.termId);
       if (!term) {
@@ -222,7 +222,7 @@ export class DiscussionService {
   }
 
   /**
-   * Get a thread by ID
+   * IDでスレッドを取得
    */
   async getThreadById(id: string, includeComments: boolean = false) {
     if (includeComments) {
@@ -241,7 +241,7 @@ export class DiscussionService {
   }
 
   /**
-   * Get all threads
+   * すべてのスレッドを取得
    */
   async getAllThreads(status?: ThreadStatus) {
     if (status) {
@@ -251,10 +251,10 @@ export class DiscussionService {
   }
 
   /**
-   * Get threads for a term
+   * ターム向けのスレッドを取得
    */
   async getThreadsForTerm(termId: string) {
-    // Validate term exists
+    // ターム存在することを検証
     const term = await termRepository.findById(termId);
     if (!term) {
       throw new Error(`Term with ID "${termId}" not found`);
@@ -264,10 +264,10 @@ export class DiscussionService {
   }
 
   /**
-   * Get threads for a proposal
+   * 提案向けのスレッドを取得
    */
   async getThreadsForProposal(proposalId: string) {
-    // Validate proposal exists
+    // 提案が存在することを検証
     const proposal = await termProposalRepository.findById(proposalId);
     if (!proposal) {
       throw new Error(`Proposal with ID "${proposalId}" not found`);
@@ -277,58 +277,58 @@ export class DiscussionService {
   }
 
   /**
-   * Update a thread
+   * スレッドを更新
    */
   async updateThread(id: string, data: UpdateDiscussionThreadDto) {
-    // Check if thread exists
+    // スレッドが存在するかを確認
     await this.getThreadById(id);
 
     return await discussionRepository.updateThread(id, data);
   }
 
   /**
-   * Close a thread
+   * スレッドを閉じる
    */
   async closeThread(id: string) {
-    // Check if thread exists
+    // スレッドが存在するかを確認
     await this.getThreadById(id);
 
     return await discussionRepository.closeThread(id);
   }
 
   /**
-   * Reopen a thread
+   * スレッドを再開
    */
   async reopenThread(id: string) {
-    // Check if thread exists
+    // スレッドが存在するかを確認
     await this.getThreadById(id);
 
     return await discussionRepository.reopenThread(id);
   }
 
   /**
-   * Delete a thread
+   * スレッドを削除
    */
   async deleteThread(id: string) {
-    // Check if thread exists
+    // スレッドが存在するかを確認
     await this.getThreadById(id);
 
     return await discussionRepository.deleteThread(id);
   }
 
-  // ===== Comment Operations =====
+  // ===== コメント操作 =====
 
   /**
-   * Add a comment to a thread
+   * スレッドにコメントを追加
    */
   async addComment(data: CreateCommentDto) {
-    // Validate thread exists
+    // スレッドが存在することを検証
     const thread = await discussionRepository.findThreadById(data.threadId);
     if (!thread) {
       throw new Error(`Thread with ID "${data.threadId}" not found`);
     }
 
-    // Can only comment on open threads
+    // 開いているスレッドにのみコメントできます
     if (thread.status === 'closed') {
       throw new Error('Cannot comment on a closed thread');
     }
@@ -337,7 +337,7 @@ export class DiscussionService {
   }
 
   /**
-   * Get a comment by ID
+   * IDでコメントを取得
    */
   async getCommentById(id: string) {
     const comment = await discussionRepository.findCommentById(id);
@@ -348,22 +348,22 @@ export class DiscussionService {
   }
 
   /**
-   * Get comments for a thread
+   * スレッドのコメントを取得
    */
   async getCommentsForThread(threadId: string) {
-    // Validate thread exists
+    // スレッドが存在することを検証
     await this.getThreadById(threadId);
 
     return await discussionRepository.findCommentsByThreadId(threadId);
   }
 
   /**
-   * Update a comment
+   * コメントを更新
    */
   async updateComment(id: string, data: UpdateCommentDto, userId: string) {
     const comment = await this.getCommentById(id);
 
-    // Only the comment author can update it
+    // コメント著者のみが更新できます
     if (comment.postedBy !== userId) {
       throw new Error('You can only update your own comments');
     }
@@ -372,12 +372,12 @@ export class DiscussionService {
   }
 
   /**
-   * Delete a comment
+   * コメントを削除
    */
   async deleteComment(id: string, userId: string) {
     const comment = await this.getCommentById(id);
 
-    // Only the comment author can delete it
+    // コメント著者のみが削除できます
     if (comment.postedBy !== userId) {
       throw new Error('You can only delete your own comments');
     }

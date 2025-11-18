@@ -1,3 +1,9 @@
+/**
+ * @file ディスカッションスレッドとコメント管理ルート
+ * @description 用語やプロポーザルに関連するディスカッションスレッドの作成、管理、
+ * およびコメント機能のエンドポイントを定義します。
+ */
+
 import { Hono } from 'hono';
 import { discussionService } from '../services/discussion.service';
 import type {
@@ -10,11 +16,20 @@ import type {
 
 export const discussionsRouter = new Hono();
 
-// ===== Thread Endpoints =====
+// ===== スレッドエンドポイント =====
 
 /**
- * POST /api/discussions/threads
- * Create a new discussion thread
+ * 新しいディスカッションスレッドを作成します。
+ * @route POST /api/discussions/threads
+ * @param {object} body - スレッド作成データ
+ * @param {string} body.title - スレッドタイトル（必須）
+ * @param {string} body.createdBy - 作成者ID（必須）
+ * @param {string} body.termId - 関連する用語ID（termId または proposalId が必須）
+ * @param {string} body.proposalId - 関連するプロポーザルID（termId または proposalId が必須）
+ * @returns {object} 201 - 作成されたスレッドオブジェクト
+ * @returns {object} 400 - 必須フィールドが不足している場合
+ * @returns {object} 404 - 関連する用語またはプロポーザルが見つからない場合
+ * @returns {object} 500 - サーバーエラー
  */
 discussionsRouter.post('/threads', async (c) => {
   try {
@@ -42,8 +57,15 @@ discussionsRouter.post('/threads', async (c) => {
 });
 
 /**
- * GET /api/discussions/threads
- * Get all threads, optionally filtered by status
+ * すべてのディスカッションスレッドを取得し、ステータスやコンテキストでフィルタリングできます。
+ * @route GET /api/discussions/threads
+ * @query {string} status - スレッドステータス（open または closed、オプション）
+ * @query {string} termId - 関連する用語でフィルタ（オプション）
+ * @query {string} proposalId - 関連するプロポーザルでフィルタ（オプション）
+ * @returns {object[]} 200 - スレッドの配列
+ * @returns {object} 400 - 無効なステータス値
+ * @returns {object} 404 - コンテキスト指定時にコンテキストが見つからない場合
+ * @returns {object} 500 - サーバーエラー
  */
 discussionsRouter.get('/threads', async (c) => {
   try {
@@ -83,8 +105,13 @@ discussionsRouter.get('/threads', async (c) => {
 });
 
 /**
- * GET /api/discussions/threads/:id
- * Get a specific thread by ID
+ * IDで指定されたディスカッションスレッドを取得します。
+ * @route GET /api/discussions/threads/:id
+ * @param {string} id - スレッドID
+ * @query {boolean} includeComments - コメントを含めるか（true の場合含める、オプション）
+ * @returns {object} 200 - スレッドオブジェクト（コメント含む場合あり）
+ * @returns {object} 404 - スレッドが見つからない場合
+ * @returns {object} 500 - サーバーエラー
  */
 discussionsRouter.get('/threads/:id', async (c) => {
   try {
@@ -104,8 +131,15 @@ discussionsRouter.get('/threads/:id', async (c) => {
 });
 
 /**
- * PUT /api/discussions/threads/:id
- * Update a thread
+ * ディスカッションスレッドを更新します。
+ * @route PUT /api/discussions/threads/:id
+ * @param {string} id - スレッドID
+ * @param {object} body - 更新データ（UpdateDiscussionThreadDto）
+ * @param {string} body.status - スレッドステータス（open または closed、オプション）
+ * @returns {object} 200 - 更新されたスレッドオブジェクト
+ * @returns {object} 400 - 無効なステータス値
+ * @returns {object} 404 - スレッドが見つからない場合
+ * @returns {object} 500 - サーバーエラー
  */
 discussionsRouter.put('/threads/:id', async (c) => {
   try {
@@ -136,8 +170,12 @@ discussionsRouter.put('/threads/:id', async (c) => {
 });
 
 /**
- * POST /api/discussions/threads/:id/close
- * Close a thread
+ * ディスカッションスレッドをクローズします。
+ * @route POST /api/discussions/threads/:id/close
+ * @param {string} id - スレッドID
+ * @returns {object} 200 - クローズされたスレッドオブジェクト
+ * @returns {object} 404 - スレッドが見つからない場合
+ * @returns {object} 500 - サーバーエラー
  */
 discussionsRouter.post('/threads/:id/close', async (c) => {
   try {
@@ -155,8 +193,12 @@ discussionsRouter.post('/threads/:id/close', async (c) => {
 });
 
 /**
- * POST /api/discussions/threads/:id/reopen
- * Reopen a thread
+ * クローズされたディスカッションスレッドを再度オープンします。
+ * @route POST /api/discussions/threads/:id/reopen
+ * @param {string} id - スレッドID
+ * @returns {object} 200 - 再度オープンされたスレッドオブジェクト
+ * @returns {object} 404 - スレッドが見つからない場合
+ * @returns {object} 500 - サーバーエラー
  */
 discussionsRouter.post('/threads/:id/reopen', async (c) => {
   try {
@@ -174,8 +216,12 @@ discussionsRouter.post('/threads/:id/reopen', async (c) => {
 });
 
 /**
- * DELETE /api/discussions/threads/:id
- * Delete a thread
+ * ディスカッションスレッドを削除します。
+ * @route DELETE /api/discussions/threads/:id
+ * @param {string} id - スレッドID
+ * @returns {object} 200 - 削除成功メッセージ
+ * @returns {object} 404 - スレッドが見つからない場合
+ * @returns {object} 500 - サーバーエラー
  */
 discussionsRouter.delete('/threads/:id', async (c) => {
   try {
@@ -192,11 +238,19 @@ discussionsRouter.delete('/threads/:id', async (c) => {
   }
 });
 
-// ===== Comment Endpoints =====
+// ===== コメントエンドポイント =====
 
 /**
- * POST /api/discussions/comments
- * Add a comment to a thread
+ * スレッドにコメントを追加します。
+ * @route POST /api/discussions/comments
+ * @param {object} body - コメント作成データ
+ * @param {string} body.threadId - スレッドID（必須）
+ * @param {string} body.content - コメント内容（必須）
+ * @param {string} body.postedBy - 投稿者ID（必須）
+ * @returns {object} 201 - 作成されたコメントオブジェクト
+ * @returns {object} 400 - 必須フィールドが不足している場合またはスレッドがクローズされている場合
+ * @returns {object} 404 - スレッドが見つからない場合
+ * @returns {object} 500 - サーバーエラー
  */
 discussionsRouter.post('/comments', async (c) => {
   try {
@@ -224,8 +278,12 @@ discussionsRouter.post('/comments', async (c) => {
 });
 
 /**
- * GET /api/discussions/threads/:threadId/comments
- * Get all comments for a thread
+ * スレッドのすべてのコメントを取得します。
+ * @route GET /api/discussions/threads/:threadId/comments
+ * @param {string} threadId - スレッドID
+ * @returns {object[]} 200 - コメントの配列
+ * @returns {object} 404 - スレッドが見つからない場合
+ * @returns {object} 500 - サーバーエラー
  */
 discussionsRouter.get('/threads/:threadId/comments', async (c) => {
   try {
@@ -243,8 +301,12 @@ discussionsRouter.get('/threads/:threadId/comments', async (c) => {
 });
 
 /**
- * GET /api/discussions/comments/:id
- * Get a specific comment by ID
+ * IDで指定されたコメントを取得します。
+ * @route GET /api/discussions/comments/:id
+ * @param {string} id - コメントID
+ * @returns {object} 200 - コメントオブジェクト
+ * @returns {object} 404 - コメントが見つからない場合
+ * @returns {object} 500 - サーバーエラー
  */
 discussionsRouter.get('/comments/:id', async (c) => {
   try {
@@ -262,8 +324,17 @@ discussionsRouter.get('/comments/:id', async (c) => {
 });
 
 /**
- * PUT /api/discussions/comments/:id
- * Update a comment
+ * コメントを更新します。
+ * @route PUT /api/discussions/comments/:id
+ * @param {string} id - コメントID
+ * @param {object} body - 更新データ
+ * @param {string} body.content - コメント内容（必須）
+ * @param {string} body.userId - ユーザーID（必須、コメント作成者のみ可能）
+ * @returns {object} 200 - 更新されたコメントオブジェクト
+ * @returns {object} 400 - 必須フィールドが不足している場合
+ * @returns {object} 403 - コメント作成者以外による更新
+ * @returns {object} 404 - コメントが見つからない場合
+ * @returns {object} 500 - サーバーエラー
  */
 discussionsRouter.put('/comments/:id', async (c) => {
   try {
@@ -299,8 +370,15 @@ discussionsRouter.put('/comments/:id', async (c) => {
 });
 
 /**
- * DELETE /api/discussions/comments/:id
- * Delete a comment
+ * コメントを削除します。
+ * @route DELETE /api/discussions/comments/:id
+ * @param {string} id - コメントID
+ * @query {string} userId - ユーザーID（必須、コメント作成者のみ可能）
+ * @returns {object} 200 - 削除成功メッセージ
+ * @returns {object} 400 - 必須フィールドが不足している場合
+ * @returns {object} 403 - コメント作成者以外による削除
+ * @returns {object} 404 - コメントが見つからない場合
+ * @returns {object} 500 - サーバーエラー
  */
 discussionsRouter.delete('/comments/:id', async (c) => {
   try {

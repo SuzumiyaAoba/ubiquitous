@@ -18,7 +18,7 @@ export interface UpdateTermRelationshipDto {
 
 export class TermRelationshipRepository {
   /**
-   * Create a new term relationship
+   * 新しい用語関係を作成
    */
   async create(data: CreateTermRelationshipDto) {
     const [relationship] = await db
@@ -35,7 +35,7 @@ export class TermRelationshipRepository {
   }
 
   /**
-   * Find a relationship by ID
+   * IDで関係を検索
    */
   async findById(id: string) {
     const [relationship] = await db
@@ -47,8 +47,8 @@ export class TermRelationshipRepository {
   }
 
   /**
-   * Find all relationships for a term
-   * Returns both outgoing (as source) and incoming (as target) relationships
+   * 用語のすべての関係を検索
+   * 送信側（ソース）と受信側（ターゲット）の両方の関係を返す
    */
   async findByTermId(termId: string) {
     const relationships = await db
@@ -65,7 +65,7 @@ export class TermRelationshipRepository {
   }
 
   /**
-   * Find outgoing relationships (where term is the source)
+   * 送信側関係を検索（用語がソースの場合）
    */
   async findOutgoingByTermId(termId: string) {
     return await db
@@ -75,7 +75,7 @@ export class TermRelationshipRepository {
   }
 
   /**
-   * Find incoming relationships (where term is the target)
+   * 受信側関係を検索（用語がターゲットの場合）
    */
   async findIncomingByTermId(termId: string) {
     return await db
@@ -85,7 +85,7 @@ export class TermRelationshipRepository {
   }
 
   /**
-   * Find relationships by type
+   * タイプで関係を検索
    */
   async findByType(relationshipType: RelationshipType) {
     return await db
@@ -95,7 +95,7 @@ export class TermRelationshipRepository {
   }
 
   /**
-   * Find specific relationship between two terms
+   * 2つの用語間の特定の関係を検索
    */
   async findByTerms(sourceTermId: string, targetTermId: string, relationshipType?: RelationshipType) {
     const conditions = [
@@ -116,7 +116,7 @@ export class TermRelationshipRepository {
   }
 
   /**
-   * Check if a relationship exists between two terms
+   * 2つの用語間に関係が存在するか確認
    */
   async exists(sourceTermId: string, targetTermId: string, relationshipType?: RelationshipType): Promise<boolean> {
     const relationship = await this.findByTerms(sourceTermId, targetTermId, relationshipType);
@@ -124,7 +124,7 @@ export class TermRelationshipRepository {
   }
 
   /**
-   * Update a relationship
+   * 関係を更新
    */
   async update(id: string, data: UpdateTermRelationshipDto) {
     const [updated] = await db
@@ -140,7 +140,7 @@ export class TermRelationshipRepository {
   }
 
   /**
-   * Delete a relationship
+   * 関係を削除
    */
   async delete(id: string) {
     const [deleted] = await db
@@ -152,7 +152,7 @@ export class TermRelationshipRepository {
   }
 
   /**
-   * Delete all relationships for a term
+   * 用語のすべての関係を削除
    */
   async deleteByTermId(termId: string) {
     const deleted = await db
@@ -169,7 +169,7 @@ export class TermRelationshipRepository {
   }
 
   /**
-   * Delete a specific relationship between two terms
+   * 2つの用語間の特定の関係を削除
    */
   async deleteByTerms(sourceTermId: string, targetTermId: string) {
     const [deleted] = await db
@@ -186,7 +186,7 @@ export class TermRelationshipRepository {
   }
 
   /**
-   * Get all parent-child relationships (useful for hierarchy traversal)
+   * すべての親子関係を取得（階層トラバーサルに有用）
    */
   async getHierarchyRelationships() {
     return await db
@@ -201,7 +201,7 @@ export class TermRelationshipRepository {
   }
 
   /**
-   * Find all descendants of a term (for circular dependency check)
+   * 用語のすべての子孫を検索（循環依存チェック用）
    */
   async findDescendants(termId: string, visited: Set<string> = new Set()): Promise<string[]> {
     if (visited.has(termId)) {
@@ -211,7 +211,7 @@ export class TermRelationshipRepository {
     visited.add(termId);
     const descendants: string[] = [];
 
-    // Find all child relationships where this term is the parent
+    // この用語がソースである子関係をすべて検索
     const childRelationships = await db
       .select()
       .from(termRelationships)
@@ -224,7 +224,7 @@ export class TermRelationshipRepository {
 
     for (const rel of childRelationships) {
       descendants.push(rel.targetTermId);
-      // Recursively find descendants of this child
+      // この子の子孫を再帰的に検索
       const childDescendants = await this.findDescendants(rel.targetTermId, visited);
       descendants.push(...childDescendants);
     }

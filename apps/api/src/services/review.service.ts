@@ -17,19 +17,19 @@ export interface ExecuteReviewDto {
 
 export class ReviewService {
   /**
-   * Schedule a review for a term
+   * ターム用のレビューをスケジュール
    */
   async scheduleReview(data: ScheduleReviewDto) {
-    // Validate term exists
+    // ターム存在することを検証
     const term = await termRepository.findById(data.termId);
     if (!term) {
       throw new Error(`Term with ID "${data.termId}" not found`);
     }
 
-    // Calculate next review date if not provided
+    // 指定されていない場合は次のレビュー日付を計算
     const nextReviewDate = data.nextReviewDate || this.calculateNextReviewDate(data.intervalDays);
 
-    // Update term with review schedule
+    // レビュースケジュールを使用してターム更新
     const updated = await termRepository.update(data.termId, {
       nextReviewDate,
       reviewInterval: data.intervalDays,
@@ -39,12 +39,12 @@ export class ReviewService {
   }
 
   /**
-   * Get terms that are due for review
+   * レビュー期限のターム取得
    */
   async getTermsDueForReview(asOfDate?: Date) {
     const dueTerms = await reviewRepository.getTermsDueForReview(asOfDate);
 
-    // Enrich with latest review information
+    // 最新のレビュー情報で充実
     const enrichedTerms = await Promise.all(
       dueTerms.map(async (term) => {
         const latestReview = await reviewRepository.getLatestReview(term.id);
@@ -62,16 +62,16 @@ export class ReviewService {
   }
 
   /**
-   * Execute a review
+   * レビューを実行
    */
   async executeReview(data: ExecuteReviewDto) {
-    // Validate term exists
+    // ターム存在することを検証
     const term = await termRepository.findById(data.termId);
     if (!term) {
       throw new Error(`Term with ID "${data.termId}" not found`);
     }
 
-    // Create review record
+    // レビューレコードを作成
     const review = await reviewRepository.create({
       termId: data.termId,
       reviewedBy: data.reviewedBy,
@@ -79,12 +79,12 @@ export class ReviewService {
       notes: data.notes,
     });
 
-    // If needs discussion, create a discussion thread
+    // ディスカッションが必要な場合は、ディスカッションスレッドを作成
     if (data.status === 'needs_discussion') {
       await this.createDiscussionThreadForReview(data.termId, review.id, data.reviewedBy);
     }
 
-    // Update next review date if term has review interval configured
+    // タームがレビュー間隔を構成している場合、次のレビュー日付を更新
     if (term.reviewInterval) {
       const nextReviewDate = this.calculateNextReviewDate(term.reviewInterval);
       await termRepository.update(data.termId, { nextReviewDate });
@@ -94,10 +94,10 @@ export class ReviewService {
   }
 
   /**
-   * Get review history for a term
+   * ターム用のレビュー履歴を取得
    */
   async getReviewHistory(termId: string) {
-    // Validate term exists
+    // ターム存在することを検証
     const term = await termRepository.findById(termId);
     if (!term) {
       throw new Error(`Term with ID "${termId}" not found`);
@@ -107,7 +107,7 @@ export class ReviewService {
   }
 
   /**
-   * Get a specific review by ID
+   * IDで特定のレビューを取得
    */
   async getReviewById(id: string) {
     const review = await reviewRepository.findById(id);
@@ -118,16 +118,16 @@ export class ReviewService {
   }
 
   /**
-   * Cancel/delete a scheduled review
+   * スケジュール済みレビューをキャンセル/削除
    */
   async cancelReviewSchedule(termId: string) {
-    // Validate term exists
+    // ターム存在することを検証
     const term = await termRepository.findById(termId);
     if (!term) {
       throw new Error(`Term with ID "${termId}" not found`);
     }
 
-    // Clear review schedule
+    // レビュースケジュールをクリア
     const updated = await termRepository.update(termId, {
       nextReviewDate: null,
       reviewInterval: null,
@@ -137,16 +137,16 @@ export class ReviewService {
   }
 
   /**
-   * Send review notifications (placeholder for future implementation)
+   * レビュー通知を送信（今後の実装用プレースホルダー）
    */
   async sendReviewNotifications(termIds: string[]) {
-    // This is a placeholder for notification functionality
-    // In a real implementation, this would:
-    // 1. Get term details
-    // 2. Get stakeholders for each term
-    // 3. Send email/webhook notifications
+    // これは通知機能用プレースホルダーです
+    // 実装では、以下を実行します：
+    // 1. ターム詳細を取得
+    // 2. 各ターム用のステークホルダーを取得
+    // 3. メール/Webhook通知を送信
 
-    console.log(`Would send review notifications for ${termIds.length} terms`);
+    console.log(`以下の用のレビュー通知を送信します${termIds.length} terms`);
 
     return {
       sent: termIds.length,
@@ -155,7 +155,7 @@ export class ReviewService {
   }
 
   /**
-   * Calculate next review date based on interval
+   * 間隔に基づいて次のレビュー日付を計算
    */
   private calculateNextReviewDate(intervalDays: number): Date {
     const now = new Date();
@@ -165,7 +165,7 @@ export class ReviewService {
   }
 
   /**
-   * Create a discussion thread for a review that needs discussion
+   * ディスカッションが必要なレビュー用にディスカッションスレッドを作成
    */
   private async createDiscussionThreadForReview(
     termId: string,
@@ -184,17 +184,17 @@ export class ReviewService {
         createdBy,
       });
 
-      // Add an initial comment explaining the review context
+      // レビューコンテキストを説明する初期コメントを追加
       await discussionRepository.createComment({
         threadId: thread.id,
-        content: `This discussion was automatically created following a review (ID: ${reviewId}) that indicated this term needs discussion.`,
+        content: `このディスカッションはレビュー（ID："${reviewId}") に自動的に作成されました。`,
         postedBy: createdBy,
       });
 
       return thread;
     } catch (error) {
-      console.error('Failed to create discussion thread for review:', error);
-      // Don't throw - the review itself succeeded
+      console.error('レビュー用のディスカッションスレッドを作成できませんでした：', error);
+      // スローしない - レビュー自体は成功しました
     }
   }
 }

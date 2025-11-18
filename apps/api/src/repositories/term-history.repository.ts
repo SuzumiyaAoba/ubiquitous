@@ -14,7 +14,7 @@ export interface CreateTermHistoryDto {
 
 export class TermHistoryRepository {
   /**
-   * Create a new history record
+   * 新しい履歴レコードを作成
    */
   async create(data: CreateTermHistoryDto) {
     const [history] = await db
@@ -34,7 +34,7 @@ export class TermHistoryRepository {
   }
 
   /**
-   * Get all history for a term
+   * 用語のすべての履歴を取得
    */
   async findByTermId(termId: string) {
     return await db
@@ -45,7 +45,7 @@ export class TermHistoryRepository {
   }
 
   /**
-   * Get the latest version number for a term
+   * 用語の最新バージョン番号を取得
    */
   async getLatestVersion(termId: string): Promise<number> {
     const [latest] = await db
@@ -59,7 +59,7 @@ export class TermHistoryRepository {
   }
 
   /**
-   * Get a specific version of a term
+   * 用語の特定のバージョンを取得
    */
   async findByVersion(termId: string, version: number) {
     const [history] = await db
@@ -76,7 +76,7 @@ export class TermHistoryRepository {
   }
 
   /**
-   * Calculate diff between two definitions
+   * 2つの定義間の差分を計算
    */
   calculateDiff(oldDef: string, newDef: string): string[] {
     const changedFields: string[] = [];

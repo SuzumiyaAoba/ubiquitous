@@ -1,3 +1,8 @@
+/**
+ * @file データエクスポート/インポートルート
+ * @description プロジェクトデータのエクスポート（JSON/Markdown形式）およびインポート機能のエンドポイントを定義します。
+ */
+
 import { Hono } from 'hono';
 import { exportService } from '../services/export.service';
 import { importService } from '../services/import.service';
@@ -6,8 +11,10 @@ import type { ImportOptions } from '../services/import.service';
 export const exportImportRouter = new Hono();
 
 /**
- * GET /api/export/json
- * Export all data as JSON
+ * すべてのデータをJSON形式でエクスポートします。
+ * @route GET /api/export/json
+ * @returns {string} 200 - JSON形式のエクスポートデータ
+ * @returns {object} 500 - サーバーエラー
  */
 exportImportRouter.get('/export/json', async (c) => {
   try {
@@ -24,8 +31,10 @@ exportImportRouter.get('/export/json', async (c) => {
 });
 
 /**
- * GET /api/export/markdown
- * Export all data as Markdown
+ * すべてのデータをMarkdown形式でエクスポートします。
+ * @route GET /api/export/markdown
+ * @returns {string} 200 - Markdown形式のエクスポートデータ
+ * @returns {object} 500 - サーバーエラー
  */
 exportImportRouter.get('/export/markdown', async (c) => {
   try {
@@ -42,8 +51,14 @@ exportImportRouter.get('/export/markdown', async (c) => {
 });
 
 /**
- * POST /api/import
- * Import data from JSON
+ * JSONからデータをインポートします。
+ * @route POST /api/import
+ * @param {object} body - リクエストボディ
+ * @param {string} body.data - インポートするJSON文字列（必須）
+ * @param {ImportOptions} body.options - インポートオプション（オプション）
+ * @returns {object} 200 - インポート成功メッセージと結果
+ * @returns {object} 400 - 必須フィールドが不足している、またはインポートにエラーがある場合
+ * @returns {object} 500 - サーバーエラー
  */
 exportImportRouter.post('/import', async (c) => {
   try {
@@ -84,8 +99,13 @@ exportImportRouter.post('/import', async (c) => {
 });
 
 /**
- * POST /api/import/validate
- * Validate import data without actually importing
+ * インポートデータを実際のインポートなしで検証します。
+ * @route POST /api/import/validate
+ * @param {object} body - リクエストボディ
+ * @param {string} body.data - 検証するJSON文字列（必須）
+ * @returns {object} 200 - 検証結果（valid, errors, warnings）
+ * @returns {object} 400 - 必須フィールドが不足している場合
+ * @returns {object} 500 - サーバーエラー
  */
 exportImportRouter.post('/import/validate', async (c) => {
   try {

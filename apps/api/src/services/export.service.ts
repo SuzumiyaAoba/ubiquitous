@@ -19,7 +19,7 @@ export interface ExportData {
 
 export class ExportService {
   /**
-   * Export all data as JSON
+   * すべてのデータをJSONでエクスポート
    */
   async exportAsJSON(): Promise<string> {
     const data = await this.getAllData();
@@ -27,7 +27,7 @@ export class ExportService {
   }
 
   /**
-   * Export all data as Markdown, organized by context
+   * すべてのデータをコンテキストに関連付けて整理されたMarkdownでエクスポート
    */
   async exportAsMarkdown(): Promise<string> {
     const contexts = await contextRepository.findAll();
@@ -35,7 +35,7 @@ export class ExportService {
 
     const lines: string[] = [];
 
-    // Header
+    // ヘッダー
     lines.push('# Ubiquitous Language Documentation');
     lines.push('');
     lines.push(`Generated on: ${new Date().toISOString()}`);
@@ -43,7 +43,7 @@ export class ExportService {
     lines.push('---');
     lines.push('');
 
-    // Table of Contents
+    // 目次
     lines.push('## Table of Contents');
     lines.push('');
     for (const context of contexts) {
@@ -53,7 +53,7 @@ export class ExportService {
     lines.push('---');
     lines.push('');
 
-    // For each context
+    // 各コンテキストごと
     for (const context of contexts) {
       lines.push(`## ${context.name}`);
       lines.push('');
@@ -63,22 +63,22 @@ export class ExportService {
         lines.push('');
       }
 
-      // Get terms in this context
+      // このコンテキスト内のターム取得
       const contextTerms = await termRepository.findByContextId(context.id);
 
       if (contextTerms.length > 0) {
-        lines.push('### Terms');
+        lines.push('### ターム');
         lines.push('');
 
         for (const termInContext of contextTerms) {
           lines.push(`#### ${termInContext.name}`);
           lines.push('');
 
-          // Status badge
+          // ステータスバッジ
           lines.push(`**Status:** \`${termInContext.status}\``);
           lines.push('');
 
-          // Definition in this context
+          // このコンテキスト内の定義
           if (termInContext.definition) {
             lines.push('**Definition:**');
             lines.push('');
@@ -86,25 +86,25 @@ export class ExportService {
             lines.push('');
           }
 
-          // Examples
+          // 例
           if (termInContext.examples) {
-            lines.push('**Examples:**');
+            lines.push('**例:**');
             lines.push('');
             lines.push(termInContext.examples);
             lines.push('');
           }
 
-          // Get relationships
+          // 関係を取得
           const relationships = await termRelationshipRepository.findOutgoingByTermId(
             termInContext.id
           );
 
           if (relationships.length > 0) {
-            lines.push('**Relationships:**');
+            lines.push('**関係:**');
             lines.push('');
 
             for (const rel of relationships) {
-              // Get target term name
+              // ターゲットターム名を取得
               const targetTerm = terms.find((t) => t.id === rel.targetTermId);
               if (targetTerm) {
                 lines.push(`- **${rel.relationshipType}:** ${targetTerm.name}`);
@@ -116,11 +116,11 @@ export class ExportService {
             lines.push('');
           }
 
-          // Get reviews
+          // レビューを取得
           const termReviews = await reviewRepository.findByTermId(termInContext.id);
           if (termReviews.length > 0) {
-            const latestReview = termReviews[0]; // Already sorted by date desc
-            lines.push('**Latest Review:**');
+            const latestReview = termReviews[0]; // 日付の降順でソート済み
+            lines.push('**最新レビュー:**');
             lines.push('');
             lines.push(
               `- Status: \`${latestReview.status}\` (${new Date(latestReview.reviewedAt).toLocaleDateString()})`
@@ -152,9 +152,9 @@ export class ExportService {
     }
 
     if (unassignedTerms.length > 0) {
-      lines.push('## Unassigned Terms');
+      lines.push('## 未割り当てターム');
       lines.push('');
-      lines.push('*Terms that are not yet assigned to any bounded context.*');
+      lines.push('*まだバウンドされたコンテキストに割り当てられていないターム。*');
       lines.push('');
 
       for (const term of unassignedTerms) {
@@ -177,7 +177,7 @@ export class ExportService {
   }
 
   /**
-   * Get all data for export
+   * エクスポート用にすべてのデータを取得
    */
   private async getAllData(): Promise<ExportData> {
     const [
@@ -192,7 +192,7 @@ export class ExportService {
       discussionRepository.findAllThreads(),
     ]);
 
-    // Get all term contexts
+    // すべてのターム-コンテキストを取得
     const termContexts: any[] = [];
     for (const term of terms) {
       const withContexts = await termRepository.getWithContexts(term.id);
@@ -207,14 +207,14 @@ export class ExportService {
       }
     }
 
-    // Get all relationships
+    // すべての関係を取得
     const relationships: any[] = [];
     for (const term of terms) {
       const rels = await termRelationshipRepository.findByTermId(term.id);
       relationships.push(...rels);
     }
 
-    // Get all discussions with comments
+    // コメント付きのすべてのディスカッションを取得
     const discussions: any[] = [];
     for (const thread of allThreads) {
       const withComments = await discussionRepository.getThreadWithComments(thread.id);
@@ -223,7 +223,7 @@ export class ExportService {
       }
     }
 
-    // Get all reviews
+    // すべてのレビューを取得
     const reviews: any[] = [];
     for (const term of terms) {
       const termReviews = await reviewRepository.findByTermId(term.id);
@@ -244,7 +244,7 @@ export class ExportService {
   }
 
   /**
-   * Convert string to URL-friendly slug
+   * 文字列をURL対応スラッグに変換
    */
   private slugify(text: string): string {
     return text

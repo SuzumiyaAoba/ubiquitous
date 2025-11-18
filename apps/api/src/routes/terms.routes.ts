@@ -1,3 +1,9 @@
+/**
+ * @file 用語管理ルート
+ * @description ユビキタス言語における用語の作成、更新、削除、および
+ * コンテキストごとの用語定義管理のエンドポイントを定義します。
+ */
+
 import { Hono } from 'hono';
 import { termService } from '../services/term.service';
 import type { CreateTermDto, UpdateTermDto, AddTermToContextDto } from '../repositories/term.repository';
@@ -5,8 +11,15 @@ import type { CreateTermDto, UpdateTermDto, AddTermToContextDto } from '../repos
 export const termsRouter = new Hono();
 
 /**
- * POST /api/terms
- * Create a new term
+ * 新しい用語を作成します。
+ * @route POST /api/terms
+ * @param {object} body - 用語作成データ
+ * @param {string} body.name - 用語名（必須）
+ * @param {string} body.createdBy - 作成者ID（オプション）
+ * @returns {object} 201 - 作成された用語オブジェクト
+ * @returns {object} 400 - 必須フィールドが不足している場合
+ * @returns {object} 409 - 同名の用語が既に存在する場合
+ * @returns {object} 500 - サーバーエラー
  */
 termsRouter.post('/', async (c) => {
   try {
@@ -28,8 +41,12 @@ termsRouter.post('/', async (c) => {
 });
 
 /**
- * GET /api/terms
- * Get all terms
+ * すべての用語を取得し、コンテキストまたはキーワードで検索できます。
+ * @route GET /api/terms
+ * @query {string} contextId - コンテキストID でフィルタ（オプション）
+ * @query {string} search - 用語名で検索（オプション）
+ * @returns {object[]} 200 - 用語の配列
+ * @returns {object} 500 - サーバーエラー
  */
 termsRouter.get('/', async (c) => {
   try {
@@ -53,8 +70,13 @@ termsRouter.get('/', async (c) => {
 });
 
 /**
- * GET /api/terms/:id
- * Get a specific term by ID
+ * IDで指定された用語を取得します。
+ * @route GET /api/terms/:id
+ * @param {string} id - 用語ID
+ * @query {boolean} includeContexts - コンテキスト情報を含めるか（true の場合含める、オプション）
+ * @returns {object} 200 - 用語オブジェクト（コンテキスト含む場合あり）
+ * @returns {object} 404 - 用語が見つからない場合
+ * @returns {object} 500 - サーバーエラー
  */
 termsRouter.get('/:id', async (c) => {
   try {
@@ -74,8 +96,16 @@ termsRouter.get('/:id', async (c) => {
 });
 
 /**
- * PUT /api/terms/:id
- * Update a term
+ * 用語を更新します。
+ * @route PUT /api/terms/:id
+ * @param {string} id - 用語ID
+ * @param {object} body - 更新データ
+ * @param {string} body.changedBy - 変更者ID（オプション）
+ * @param {string} body.changeReason - 変更理由（オプション）
+ * @returns {object} 200 - 更新された用語オブジェクト
+ * @returns {object} 404 - 用語が見つからない場合
+ * @returns {object} 409 - 同名の用語が既に存在する場合
+ * @returns {object} 500 - サーバーエラー
  */
 termsRouter.put('/:id', async (c) => {
   try {
@@ -101,8 +131,13 @@ termsRouter.put('/:id', async (c) => {
 });
 
 /**
- * DELETE /api/terms/:id
- * Delete a term
+ * 用語を削除します。
+ * @route DELETE /api/terms/:id
+ * @param {string} id - 用語ID
+ * @query {boolean} permanent - 完全削除するか（true の場合完全削除、デフォルト: false）
+ * @returns {object} 200 - 削除成功メッセージ
+ * @returns {object} 404 - 用語が見つからない場合
+ * @returns {object} 500 - サーバーエラー
  */
 termsRouter.delete('/:id', async (c) => {
   try {
@@ -119,8 +154,12 @@ termsRouter.delete('/:id', async (c) => {
 });
 
 /**
- * GET /api/terms/:id/history
- * Get term history
+ * 用語の変更履歴を取得します。
+ * @route GET /api/terms/:id/history
+ * @param {string} id - 用語ID
+ * @returns {object[]} 200 - 変更履歴の配列
+ * @returns {object} 404 - 用語が見つからない場合
+ * @returns {object} 500 - サーバーエラー
  */
 termsRouter.get('/:id/history', async (c) => {
   try {
@@ -135,8 +174,18 @@ termsRouter.get('/:id/history', async (c) => {
 });
 
 /**
- * POST /api/terms/:id/contexts
- * Add a term to a context
+ * 用語をコンテキストに追加します。
+ * @route POST /api/terms/:id/contexts
+ * @param {string} id - 用語ID
+ * @param {object} body - コンテキスト追加データ
+ * @param {string} body.contextId - コンテキストID（必須）
+ * @param {string} body.definition - 当コンテキストでの定義（必須）
+ * @param {string} body.examples - 使用例（オプション）
+ * @param {string} body.changedBy - 変更者ID（オプション）
+ * @returns {object} 201 - 追加されたコンテキスト関連情報オブジェクト
+ * @returns {object} 400 - 必須フィールドが不足している場合
+ * @returns {object} 409 - 用語が既にコンテキストに追加されている場合
+ * @returns {object} 500 - サーバーエラー
  */
 termsRouter.post('/:id/contexts', async (c) => {
   try {
@@ -164,8 +213,18 @@ termsRouter.post('/:id/contexts', async (c) => {
 });
 
 /**
- * PUT /api/terms/:id/contexts/:contextId
- * Update term definition in a specific context
+ * 特定のコンテキストにおける用語の定義を更新します。
+ * @route PUT /api/terms/:id/contexts/:contextId
+ * @param {string} id - 用語ID
+ * @param {string} contextId - コンテキストID
+ * @param {object} body - 更新データ
+ * @param {string} body.definition - 新しい定義（必須）
+ * @param {string} body.examples - 新しい使用例（オプション）
+ * @param {string} body.changedBy - 変更者ID（オプション）
+ * @returns {object} 200 - 更新されたコンテキスト関連情報オブジェクト
+ * @returns {object} 400 - 必須フィールドが不足している場合
+ * @returns {object} 404 - 用語またはコンテキストが見つからない場合
+ * @returns {object} 500 - サーバーエラー
  */
 termsRouter.put('/:id/contexts/:contextId', async (c) => {
   try {
@@ -194,8 +253,13 @@ termsRouter.put('/:id/contexts/:contextId', async (c) => {
 });
 
 /**
- * DELETE /api/terms/:id/contexts/:contextId
- * Remove a term from a context
+ * 用語をコンテキストから削除します。
+ * @route DELETE /api/terms/:id/contexts/:contextId
+ * @param {string} id - 用語ID
+ * @param {string} contextId - コンテキストID
+ * @returns {object} 200 - 削除成功メッセージ
+ * @returns {object} 404 - 用語またはコンテキストが見つからない場合
+ * @returns {object} 500 - サーバーエラー
  */
 termsRouter.delete('/:id/contexts/:contextId', async (c) => {
   try {

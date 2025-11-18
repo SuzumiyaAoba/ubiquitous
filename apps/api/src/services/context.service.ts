@@ -6,11 +6,11 @@ import type { CreateContextDto, UpdateContextDto } from '@ubiquitous/types';
 
 export class ContextService {
   /**
-   * Create a new bounded context
-   * Validates that the name is unique before creating
+   * 新しいバウンドされたコンテキストを作成
+   * 作成前に名前がユニークであることを検証
    */
   async createContext(data: CreateContextDto) {
-    // Check if context with same name already exists
+    // 同じ名前のコンテキストが既に存在するかを確認
     const exists = await contextRepository.existsByName(data.name);
     if (exists) {
       throw new Error(`Context with name "${data.name}" already exists`);
@@ -20,7 +20,7 @@ export class ContextService {
   }
 
   /**
-   * Get a context by ID
+   * IDでコンテキストを取得
    */
   async getContextById(id: string) {
     const context = await contextRepository.findById(id);
@@ -31,20 +31,20 @@ export class ContextService {
   }
 
   /**
-   * Get all contexts
+   * すべてのコンテキストを取得
    */
   async getAllContexts() {
     return await contextRepository.findAll();
   }
 
   /**
-   * Update a context
+   * コンテキストを更新
    */
   async updateContext(id: string, data: UpdateContextDto) {
-    // Check if context exists
+    // コンテキストが存在するかを確認
     await this.getContextById(id);
 
-    // If updating name, check for uniqueness
+    // 名前を更新する場合、ユニークネスを確認
     if (data.name) {
       const existingContext = await contextRepository.findById(id);
       if (existingContext && existingContext.name !== data.name) {
@@ -59,23 +59,23 @@ export class ContextService {
   }
 
   /**
-   * Delete a context
-   * Note: This will cascade delete all associated term-context relationships
+   * コンテキストを削除
+   * 注記：これは、すべての関連するターム-コンテキスト関係をカスケード削除します
    */
   async deleteContext(id: string) {
-    // Check if context exists
+    // コンテキストが存在するかを確認
     await this.getContextById(id);
 
     return await contextRepository.delete(id);
   }
 
   /**
-   * Get context with all associated terms
+   * 関連するすべてのターム付きコンテキストを取得
    */
   async getContextWithTerms(id: string) {
     const context = await this.getContextById(id);
 
-    // Get all terms associated with this context
+    // このコンテキストに関連するすべてのタームを取得
     const contextTerms = await db
       .select({
         id: terms.id,

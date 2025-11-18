@@ -26,7 +26,7 @@ export interface AddTermToContextDto {
 
 export class TermRepository {
   /**
-   * Create a new term
+   * 新しい用語を作成
    */
   async create(data: CreateTermDto) {
     const [term] = await db
@@ -42,7 +42,7 @@ export class TermRepository {
   }
 
   /**
-   * Find a term by ID
+   * IDで用語を検索
    */
   async findById(id: string) {
     const [term] = await db
@@ -54,14 +54,14 @@ export class TermRepository {
   }
 
   /**
-   * Find all terms
+   * すべての用語を取得
    */
   async findAll() {
     return await db.select().from(terms);
   }
 
   /**
-   * Find terms by context ID
+   * コンテキストIDで用語を検索
    */
   async findByContextId(contextId: string) {
     const result = await db
@@ -83,7 +83,7 @@ export class TermRepository {
   }
 
   /**
-   * Search terms by name
+   * 名前で用語を検索
    */
   async searchByName(query: string) {
     return await db
@@ -93,7 +93,7 @@ export class TermRepository {
   }
 
   /**
-   * Update a term
+   * 用語を更新
    */
   async update(id: string, data: UpdateTermDto) {
     const [updated] = await db
@@ -109,7 +109,7 @@ export class TermRepository {
   }
 
   /**
-   * Delete a term (soft delete by setting status to deprecated)
+   * 用語をソフト削除（ステータスを廃止予定に設定）
    */
   async softDelete(id: string) {
     const [deleted] = await db
@@ -125,7 +125,7 @@ export class TermRepository {
   }
 
   /**
-   * Permanently delete a term
+   * 用語を完全に削除
    */
   async delete(id: string) {
     const [deleted] = await db
@@ -137,7 +137,7 @@ export class TermRepository {
   }
 
   /**
-   * Check if a term exists by name
+   * 名前で用語が存在するか確認
    */
   async existsByName(name: string): Promise<boolean> {
     const [term] = await db
@@ -149,7 +149,7 @@ export class TermRepository {
   }
 
   /**
-   * Check if a term exists in a specific context
+   * 特定のコンテキストで用語が存在するか確認
    */
   async existsInContext(termId: string, contextId: string): Promise<boolean> {
     const [record] = await db
@@ -166,7 +166,7 @@ export class TermRepository {
   }
 
   /**
-   * Add a term to a context with definition
+   * 定義付きでコンテキストに用語を追加
    */
   async addToContext(data: AddTermToContextDto) {
     const [termContext] = await db
@@ -183,7 +183,7 @@ export class TermRepository {
   }
 
   /**
-   * Update term definition in a specific context
+   * 特定のコンテキストで用語の定義を更新
    */
   async updateInContext(termId: string, contextId: string, definition: string, examples?: string) {
     const [updated] = await db
@@ -205,7 +205,7 @@ export class TermRepository {
   }
 
   /**
-   * Remove a term from a context
+   * コンテキストから用語を削除
    */
   async removeFromContext(termId: string, contextId: string) {
     const [deleted] = await db
@@ -222,7 +222,7 @@ export class TermRepository {
   }
 
   /**
-   * Get term with all its contexts
+   * すべてのコンテキスト付き用語を取得
    */
   async getWithContexts(termId: string) {
     const term = await this.findById(termId);
@@ -246,7 +246,7 @@ export class TermRepository {
   }
 
   /**
-   * Get all essential terms
+   * すべての重要な用語を取得
    */
   async findEssentialTerms() {
     return await db
@@ -256,7 +256,7 @@ export class TermRepository {
   }
 
   /**
-   * Get essential term IDs
+   * 重要な用語IDを取得
    */
   async getEssentialTermIds(): Promise<string[]> {
     const essentialTerms = await this.findEssentialTerms();

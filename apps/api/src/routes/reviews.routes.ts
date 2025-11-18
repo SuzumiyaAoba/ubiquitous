@@ -1,3 +1,8 @@
+/**
+ * @file 用語レビュー管理ルート
+ * @description 用語の定期的なレビュースケジューリング、実行、履歴管理のエンドポイントを定義します。
+ */
+
 import { Hono } from 'hono';
 import { reviewService } from '../services/review.service';
 import type { ScheduleReviewDto, ExecuteReviewDto } from '../services/review.service';
@@ -6,8 +11,15 @@ import type { ReviewStatus } from '../repositories/review.repository';
 export const reviewsRouter = new Hono();
 
 /**
- * POST /api/reviews/schedule
- * Schedule a review for a term
+ * 用語のレビューをスケジュールします。
+ * @route POST /api/reviews/schedule
+ * @param {object} body - スケジュールデータ
+ * @param {string} body.termId - 用語ID（必須）
+ * @param {number} body.intervalDays - レビュー間隔（日数、必須、正数）
+ * @returns {object} 201 - スケジュール設定されたレビューオブジェクト
+ * @returns {object} 400 - バリデーションエラー
+ * @returns {object} 404 - 用語が見つからない場合
+ * @returns {object} 500 - サーバーエラー
  */
 reviewsRouter.post('/schedule', async (c) => {
   try {
@@ -35,8 +47,12 @@ reviewsRouter.post('/schedule', async (c) => {
 });
 
 /**
- * DELETE /api/reviews/schedule/:termId
- * Cancel a scheduled review
+ * スケジュール済みのレビューをキャンセルします。
+ * @route DELETE /api/reviews/schedule/:termId
+ * @param {string} termId - 用語ID
+ * @returns {object} 200 - キャンセル後の用語オブジェクト
+ * @returns {object} 404 - 用語が見つからない場合
+ * @returns {object} 500 - サーバーエラー
  */
 reviewsRouter.delete('/schedule/:termId', async (c) => {
   try {
@@ -54,8 +70,12 @@ reviewsRouter.delete('/schedule/:termId', async (c) => {
 });
 
 /**
- * GET /api/reviews/due
- * Get terms that are due for review
+ * レビュー予定日を過ぎた用語を取得します。
+ * @route GET /api/reviews/due
+ * @query {string} asOfDate - チェック基準日（ISO 8601形式、オプション、デフォルト: 今日）
+ * @returns {object[]} 200 - レビュー予定超過の用語配列
+ * @returns {object} 400 - 無効な日付形式
+ * @returns {object} 500 - サーバーエラー
  */
 reviewsRouter.get('/due', async (c) => {
   try {
@@ -76,8 +96,16 @@ reviewsRouter.get('/due', async (c) => {
 });
 
 /**
- * POST /api/reviews
- * Execute a review
+ * 用語のレビューを実行します。
+ * @route POST /api/reviews
+ * @param {object} body - レビュー実行データ
+ * @param {string} body.termId - 用語ID（必須）
+ * @param {string} body.reviewedBy - レビュアーID（必須）
+ * @param {string} body.status - レビューステータス（必須、confirmed/needs_update/needs_discussion）
+ * @returns {object} 201 - 実行されたレビューオブジェクト
+ * @returns {object} 400 - バリデーションエラーまたは無効なステータス
+ * @returns {object} 404 - 用語が見つからない場合
+ * @returns {object} 500 - サーバーエラー
  */
 reviewsRouter.post('/', async (c) => {
   try {
@@ -110,8 +138,12 @@ reviewsRouter.post('/', async (c) => {
 });
 
 /**
- * GET /api/reviews/terms/:termId
- * Get review history for a term
+ * 用語のレビュー履歴を取得します。
+ * @route GET /api/reviews/terms/:termId
+ * @param {string} termId - 用語ID
+ * @returns {object[]} 200 - レビュー履歴の配列
+ * @returns {object} 404 - 用語が見つからない場合
+ * @returns {object} 500 - サーバーエラー
  */
 reviewsRouter.get('/terms/:termId', async (c) => {
   try {
@@ -129,8 +161,12 @@ reviewsRouter.get('/terms/:termId', async (c) => {
 });
 
 /**
- * GET /api/reviews/:id
- * Get a specific review by ID
+ * IDで指定されたレビューを取得します。
+ * @route GET /api/reviews/:id
+ * @param {string} id - レビューID
+ * @returns {object} 200 - レビューオブジェクト
+ * @returns {object} 404 - レビューが見つからない場合
+ * @returns {object} 500 - サーバーエラー
  */
 reviewsRouter.get('/:id', async (c) => {
   try {
@@ -148,8 +184,13 @@ reviewsRouter.get('/:id', async (c) => {
 });
 
 /**
- * POST /api/reviews/notifications
- * Send review notifications for specified terms
+ * 指定された用語のレビュー通知を送信します。
+ * @route POST /api/reviews/notifications
+ * @param {object} body - リクエストボディ
+ * @param {string[]} body.termIds - 通知対象の用語ID配列（必須）
+ * @returns {object} 200 - 通知送信結果
+ * @returns {object} 400 - 必須フィールドが不足している場合
+ * @returns {object} 500 - サーバーエラー
  */
 reviewsRouter.post('/notifications', async (c) => {
   try {

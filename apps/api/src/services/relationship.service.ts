@@ -11,21 +11,21 @@ import { eq, or } from 'drizzle-orm';
 
 export class RelationshipService {
   /**
-   * Check for circular dependencies in parent-child relationships
-   * Returns true if adding this relationship would create a cycle
+   * 親-子関係の循環依存をチェック
+   * この関係を追加すると循環が作成される場合、trueを返す
    */
   async wouldCreateCycle(sourceTermId: string, targetTermId: string): Promise<boolean> {
-    // A relationship from A to B creates a cycle if B is already an ancestor of A
+    // B がAの祖先である場合、AからBへの関係は循環を作成します
     const descendants = await termRelationshipRepository.findDescendants(targetTermId);
     return descendants.includes(sourceTermId);
   }
 
   /**
-   * Create a new term relationship
-   * Validates terms exist and prevents circular dependencies for parent-child relationships
+   * 新しいターム関係を作成
+   * ターム存在することを検証し、親-子関係の循環依存を防ぎます
    */
   async createRelationship(data: CreateTermRelationshipDto) {
-    // Validate source and target terms exist
+    // ソースタームとターゲットタームが存在することを検証
     const sourceTerm = await termRepository.findById(data.sourceTermId);
     if (!sourceTerm) {
       throw new Error(`Source term with ID "${data.sourceTermId}" not found`);
@@ -36,12 +36,12 @@ export class RelationshipService {
       throw new Error(`Target term with ID "${data.targetTermId}" not found`);
     }
 
-    // Can't create a relationship from a term to itself
+    // ターム自体への関係を作成できません
     if (data.sourceTermId === data.targetTermId) {
       throw new Error('Cannot create a relationship from a term to itself');
     }
 
-    // Check if relationship already exists
+    // 関係が既に存在するかをチェック
     const existingRelationship = await termRelationshipRepository.findByTerms(
       data.sourceTermId,
       data.targetTermId,
@@ -54,7 +54,7 @@ export class RelationshipService {
       );
     }
 
-    // For parent-child relationships, check for circular dependencies
+    // 親-子関係については、循環依存をチェック
     if (data.relationshipType === 'parent' || data.relationshipType === 'child') {
       const wouldCycle = await this.wouldCreateCycle(data.sourceTermId, data.targetTermId);
       if (wouldCycle) {
@@ -68,7 +68,7 @@ export class RelationshipService {
   }
 
   /**
-   * Get a relationship by ID
+   * IDで関係を取得
    */
   async getRelationshipById(id: string) {
     const relationship = await termRelationshipRepository.findById(id);
@@ -79,10 +79,10 @@ export class RelationshipService {
   }
 
   /**
-   * Get all relationships for a term
+   * ターム用のすべての関係を取得
    */
   async getRelationshipsForTerm(termId: string) {
-    // Validate term exists
+    // ターム存在することを検証
     const term = await termRepository.findById(termId);
     if (!term) {
       throw new Error(`Term with ID "${termId}" not found`);
@@ -92,19 +92,19 @@ export class RelationshipService {
   }
 
   /**
-   * Get term with all its relationships and related term details
+   * 関連するターム詳細を含むすべての関係を持つターム取得
    */
   async getTermWithRelationships(termId: string) {
-    // Validate term exists
+    // ターム存在することを検証
     const term = await termRepository.findById(termId);
     if (!term) {
       throw new Error(`Term with ID "${termId}" not found`);
     }
 
-    // Get all relationships
+    // すべての関係を取得
     const relationships = await termRelationshipRepository.findByTermId(termId);
 
-    // Fetch related term details
+    // 関連するターム詳細を取得
     const enrichedRelationships = await Promise.all(
       relationships.map(async (rel) => {
         const relatedTermId = rel.sourceTermId === termId ? rel.targetTermId : rel.sourceTermId;
@@ -136,13 +136,13 @@ export class RelationshipService {
   }
 
   /**
-   * Update a relationship
+   * 関係を更新
    */
   async updateRelationship(id: string, data: UpdateTermRelationshipDto) {
-    // Check if relationship exists
+    // 関係が存在するかをチェック
     const existing = await this.getRelationshipById(id);
 
-    // If changing relationship type to parent/child, check for cycles
+    // 関係タイプを親/子に変更する場合は、サイクルをチェック
     if (data.relationshipType && (data.relationshipType === 'parent' || data.relationshipType === 'child')) {
       if (existing.relationshipType !== data.relationshipType) {
         const wouldCycle = await this.wouldCreateCycle(existing.sourceTermId, existing.targetTermId);
@@ -158,17 +158,17 @@ export class RelationshipService {
   }
 
   /**
-   * Delete a relationship
+   * 関係を削除
    */
   async deleteRelationship(id: string) {
-    // Check if relationship exists
+    // 関係が存在するかをチェック
     await this.getRelationshipById(id);
 
     return await termRelationshipRepository.delete(id);
   }
 
   /**
-   * Delete a specific relationship between two terms
+   * 2つのターム間の特定の関係を削除
    */
   async deleteRelationshipBetweenTerms(sourceTermId: string, targetTermId: string) {
     const deleted = await termRelationshipRepository.deleteByTerms(sourceTermId, targetTermId);
@@ -179,10 +179,10 @@ export class RelationshipService {
   }
 
   /**
-   * Get diagram data for a context (all terms and their relationships)
+   * コンテキスト用の図データを取得（すべてのターム と関係）
    */
   async getDiagramDataForContext(contextId: string) {
-    // Get all terms in this context
+    // このコンテキスト内のすべてのターム取得
     const contextTerms = await termRepository.findByContextId(contextId);
     const termIds = contextTerms.map((t) => t.id);
 
@@ -193,7 +193,7 @@ export class RelationshipService {
       };
     }
 
-    // Get all relationships between these terms
+    // これらのターム間のすべての関係を取得
     const allRelationships = await db
       .select()
       .from(termRelationships)
@@ -206,12 +206,12 @@ export class RelationshipService {
         )
       );
 
-    // Filter to only include relationships where both terms are in the context
+    // 両方のターム コンテキストに含まれている関係のみを含むようにフィルター
     const contextRelationships = allRelationships.filter(
       (rel) => termIds.includes(rel.sourceTermId) && termIds.includes(rel.targetTermId)
     );
 
-    // Format for diagram visualization
+    // 図の視覚化用にフォーマット
     const nodes = contextTerms.map((term) => ({
       id: term.id,
       label: term.name,
@@ -234,10 +234,10 @@ export class RelationshipService {
   }
 
   /**
-   * Get all terms related to a given term by relationship type
+   * 関係タイプで指定されたタームに関連するすべてのターム取得
    */
   async getRelatedTermsByType(termId: string, relationshipType: RelationshipType) {
-    // Validate term exists
+    // ターム存在することを検証
     await termRepository.findById(termId);
 
     const relationships = await db
@@ -254,7 +254,7 @@ export class RelationshipService {
       .filter((rel) => rel.relationshipType === relationshipType)
       .map((rel) => (rel.sourceTermId === termId ? rel.targetTermId : rel.sourceTermId));
 
-    // Fetch term details
+    // ターム詳細を取得
     const relatedTerms = await Promise.all(
       relatedTermIds.map((id) => termRepository.findById(id))
     );
@@ -263,22 +263,22 @@ export class RelationshipService {
   }
 
   /**
-   * Get term hierarchy (parent-child relationships)
+   * ターム階層を取得（親-子関係）
    */
   async getTermHierarchy(rootTermId?: string) {
     const hierarchyRelationships = await termRelationshipRepository.getHierarchyRelationships();
 
     if (rootTermId) {
-      // Build hierarchy starting from root term
+      // ルートターム から階層を構築
       return await this.buildHierarchyTree(rootTermId, hierarchyRelationships);
     }
 
-    // Return all hierarchy relationships
+    // すべての階層関係を返す
     return hierarchyRelationships;
   }
 
   /**
-   * Build a hierarchical tree structure from relationships
+   * 関係から階層ツリー構造を構築
    */
   private async buildHierarchyTree(
     termId: string,
@@ -286,7 +286,7 @@ export class RelationshipService {
     visited: Set<string> = new Set()
   ): Promise<any> {
     if (visited.has(termId)) {
-      return null; // Prevent infinite loops
+      return null; // 無限ループを防ぐ
     }
 
     visited.add(termId);
@@ -294,8 +294,7 @@ export class RelationshipService {
     const term = await termRepository.findById(termId);
     if (!term) return null;
 
-    // Find child relationships
-    const childRelationships = allRelationships.filter(
+    // 子関係を検索
       (rel) => rel.sourceTermId === termId && rel.relationshipType === 'child'
     );
 

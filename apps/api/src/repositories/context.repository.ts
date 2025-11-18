@@ -5,7 +5,7 @@ import type { CreateContextDto, UpdateContextDto } from '@ubiquitous/types';
 
 export class ContextRepository {
   /**
-   * Create a new bounded context
+   * 新しいバウンデッドコンテキストを作成
    */
   async create(data: CreateContextDto) {
     const [context] = await db
@@ -20,7 +20,7 @@ export class ContextRepository {
   }
 
   /**
-   * Find a context by ID
+   * IDでバウンデッドコンテキストを検索
    */
   async findById(id: string) {
     const [context] = await db
@@ -32,14 +32,14 @@ export class ContextRepository {
   }
 
   /**
-   * Find all contexts
+   * すべてのバウンデッドコンテキストを取得
    */
   async findAll() {
     return await db.select().from(contexts);
   }
 
   /**
-   * Update a context
+   * バウンデッドコンテキストを更新
    */
   async update(id: string, data: UpdateContextDto) {
     const [updated] = await db
@@ -55,7 +55,7 @@ export class ContextRepository {
   }
 
   /**
-   * Delete a context
+   * バウンデッドコンテキストを削除
    */
   async delete(id: string) {
     const [deleted] = await db
@@ -67,7 +67,7 @@ export class ContextRepository {
   }
 
   /**
-   * Check if a context exists by name
+   * 名前でバウンデッドコンテキストが存在するか確認
    */
   async existsByName(name: string): Promise<boolean> {
     const [context] = await db
@@ -79,7 +79,7 @@ export class ContextRepository {
   }
 
   /**
-   * Find a context by name
+   * 名前でバウンデッドコンテキストを検索
    */
   async findByName(name: string) {
     const [context] = await db
