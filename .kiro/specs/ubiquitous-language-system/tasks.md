@@ -241,23 +241,28 @@
     - POST /api/ai/ask - 質問応答
     - _要求: 12.1, 12.2, 12.3, 12.4, 12.5_
 
-- [ ] 10. オンボーディング支援機能の実装
-  - [ ] 10.1 UserLearningエンティティとリポジトリを実装
+- [x] 10. オンボーディング支援機能の実装
+  - [x] 10.1 UserLearningエンティティとリポジトリを実装
     - UserLearningモデルクラスを作成
     - 学習済みマーキング機能
     - _要求: 5.2_
-  
-  - [ ] 10.2 オンボーディング機能を実装
+
+  - [x] 10.2 オンボーディング機能を実装
     - 必須用語の指定機能
     - 学習進捗の計算
     - 依存関係に基づく学習順序の生成
     - _要求: 5.1, 5.3, 5.4, 5.5_
-  
-  - [ ] 10.3 オンボーディングAPIエンドポイントを作成
+
+  - [x] 10.3 オンボーディングAPIエンドポイントを作成
     - GET /api/onboarding/essential-terms - 必須用語取得
+    - PUT /api/onboarding/essential-terms/:id - 必須用語指定
+    - DELETE /api/onboarding/essential-terms/:id - 必須用語解除
     - POST /api/onboarding/mark-learned - 学習済みマーク
-    - GET /api/onboarding/progress - 学習進捗取得
-    - PUT /api/terms/:id/essential - 必須用語指定
+    - DELETE /api/onboarding/mark-learned/:userId/:termId - 学習解除
+    - GET /api/onboarding/progress/:userId - 学習進捗取得
+    - GET /api/onboarding/learning-path/:userId - 学習パス取得
+    - GET /api/onboarding/next-terms/:userId - 次の推奨用語取得
+    - GET /api/onboarding/can-learn/:userId/:termId - 学習可能チェック
     - _要求: 5.1, 5.2, 5.3, 5.4_
 
 - [ ] 11. コード分析機能の実装

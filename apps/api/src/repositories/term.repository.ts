@@ -12,6 +12,7 @@ export interface UpdateTermDto {
   name?: string;
   description?: string;
   status?: 'draft' | 'active' | 'deprecated';
+  isEssential?: boolean;
   nextReviewDate?: Date | null;
   reviewInterval?: number | null;
 }
@@ -242,6 +243,24 @@ export class TermRepository {
       ...term,
       contexts,
     };
+  }
+
+  /**
+   * Get all essential terms
+   */
+  async findEssentialTerms() {
+    return await db
+      .select()
+      .from(terms)
+      .where(eq(terms.isEssential, true));
+  }
+
+  /**
+   * Get essential term IDs
+   */
+  async getEssentialTermIds(): Promise<string[]> {
+    const essentialTerms = await this.findEssentialTerms();
+    return essentialTerms.map((term) => term.id);
   }
 }
 
