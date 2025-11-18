@@ -21,7 +21,7 @@ jobs:
 
     steps:
       - name: コードをチェックアウト
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Node.js ${{ matrix.node-version }} をセットアップ
         uses: actions/setup-node@v4
@@ -49,7 +49,7 @@ jobs:
 
     steps:
       - name: コードをチェックアウト
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Node.js をセットアップ
         uses: actions/setup-node@v4
