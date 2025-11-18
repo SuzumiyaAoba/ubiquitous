@@ -2,6 +2,10 @@
 
 **ドメイン駆動設計（DDD）のためのユビキタス言語管理プラットフォーム**
 
+[![CI](https://github.com/SuzumiyaAoba/ubiquitous/actions/workflows/ci.yml/badge.svg)](https://github.com/SuzumiyaAoba/ubiquitous/actions/workflows/ci.yml)
+[![CodeQL](https://github.com/SuzumiyaAoba/ubiquitous/actions/workflows/codeql.yml/badge.svg)](https://github.com/SuzumiyaAoba/ubiquitous/actions/workflows/codeql.yml)
+[![License](https://img.shields.io/badge/license-TBD-blue.svg)](LICENSE)
+
 ## 🎯 プロジェクト概要
 
 このプロジェクトは、ドメイン駆動設計を実践するチームが、ユビキタス言語を効果的に管理・共有・進化させるための専用システムです。開発チームとドメインエキスパートの間で共通の語彙を確立し、ドメインの理解を深め、より良いソフトウェア設計を実現することを目指します。
@@ -117,6 +121,34 @@ npm run dev
 - [要求仕様書](./.kiro/specs/ubiquitous-language-system/requirements.md)
 - [設計書](./.kiro/specs/ubiquitous-language-system/design.md)
 - [実装計画](./.kiro/specs/ubiquitous-language-system/tasks.md)
+
+## 🔧 開発
+
+### 自動化されたワークフロー
+
+このプロジェクトでは、以下のGitHub Actionsワークフローが設定されています：
+
+- **CI/CD** - ビルド、テスト、型チェックを自動実行
+- **CodeQL** - セキュリティ脆弱性の自動スキャン
+- **Dependency Review** - PRでの依存関係の変更を自動レビュー
+- **Dependabot** - 依存関係の自動更新
+- **PR Labeler** - PRのサイズと変更内容に基づく自動ラベリング
+
+### コマンド
+
+```bash
+# すべてのワークスペースで開発サーバーを起動
+npm run dev
+
+# すべてのワークスペースでビルド
+npm run build
+
+# すべてのワークスペースでリント
+npm run lint
+
+# すべてのワークスペースでテスト
+npm run test
+```
 
 ## 📚 参考資料
 

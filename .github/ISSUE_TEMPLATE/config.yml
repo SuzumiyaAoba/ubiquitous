@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: 質問やディスカッション
+    url: https://github.com/SuzumiyaAoba/ubiquitous/discussions
+    about: プロジェクトに関する質問をしたり、ディスカッションを開始したりできます
+  - name: ドキュメント
+    url: https://github.com/SuzumiyaAoba/ubiquitous/blob/main/README.md
+    about: 使用方法のガイドやAPIリファレンスについてはドキュメントを確認してください

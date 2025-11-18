@@ -18,136 +18,191 @@
     - マイグレーションスクリプトを作成
     - _要求: 1.1, 1.2, 3.1, 3.2, 4.1, 7.1, 10.1, 11.1, 12.1_
 
-- [ ] 3. 境界づけられたコンテキスト管理機能の実装
-  - [ ] 3.1 BoundedContextエンティティとリポジトリを実装
+- [x] 3. 境界づけられたコンテキスト管理機能の実装
+  - [x] 3.1 BoundedContextエンティティとリポジトリを実装
     - BoundedContextモデルクラスを作成
     - CRUD操作のためのリポジトリパターンを実装
     - _要求: 3.1_
-  
-  - [ ] 3.2 ContextService を実装
+
+  - [x] 3.2 ContextService を実装
     - コンテキストの作成、更新、取得機能を実装
     - コンテキストに関連する用語の取得機能を実装
     - _要求: 3.1, 3.4_
-  
-  - [ ] 3.3 コンテキスト管理APIエンドポイントを作成
+
+  - [x] 3.3 コンテキスト管理APIエンドポイントを作成
     - POST /api/contexts - コンテキスト作成
     - GET /api/contexts - 全コンテキスト取得
     - GET /api/contexts/:id - 特定コンテキスト取得
     - PUT /api/contexts/:id - コンテキスト更新
+    - DELETE /api/contexts/:id - コンテキスト削除
+    - GET /api/contexts/:id/terms - コンテキストの用語取得
     - _要求: 3.1, 3.4_
 
-- [ ] 4. 用語管理のコア機能を実装
-  - [ ] 4.1 Termエンティティとリポジトリを実装
+- [x] 4. 用語管理のコア機能を実装
+  - [x] 4.1 Termエンティティとリポジトリを実装
     - Termモデルクラスを作成
     - CRUD操作のためのリポジトリを実装
     - 一意性制約のバリデーション（コンテキスト内）
+    - コンテキストへの用語追加・更新・削除機能
     - _要求: 1.1, 1.2_
-  
-  - [ ] 4.2 TermHistoryの追跡機能を実装
+
+  - [x] 4.2 TermHistoryの追跡機能を実装
     - 用語更新時の履歴レコード作成
     - 変更差分の計算ロジック
     - 履歴取得機能
+    - バージョン番号管理
     - _要求: 4.1, 4.2, 4.4_
-  
-  - [ ] 4.3 TermServiceを実装
+
+  - [x] 4.3 TermServiceを実装
     - 用語の作成、更新、削除（アーカイブ）機能
     - 用語取得と履歴取得機能
-    - 閲覧回数のトラッキング
+    - コンテキスト内での用語定義管理
+    - 自動履歴追跡機能
     - _要求: 1.1, 1.2, 1.3, 1.4, 1.5, 2.4, 4.1, 4.2, 4.3, 4.5_
-  
-  - [ ] 4.4 用語管理APIエンドポイントを作成
+
+  - [x] 4.4 用語管理APIエンドポイントを作成
     - POST /api/terms - 用語作成
+    - GET /api/terms - 全用語取得（フィルタリング機能付き）
     - GET /api/terms/:id - 用語取得
-    - PUT /api/terms/:id - 用語更新
+    - PUT /api/terms/:id - 用語更新（履歴追跡付き）
     - DELETE /api/terms/:id - 用語削除（アーカイブ）
     - GET /api/terms/:id/history - 履歴取得
+    - POST /api/terms/:id/contexts - コンテキストに追加
+    - PUT /api/terms/:id/contexts/:contextId - コンテキスト内更新
+    - DELETE /api/terms/:id/contexts/:contextId - コンテキストから削除
     - _要求: 1.1, 1.3, 1.4, 1.5, 4.1, 4.2, 4.3_
 
-- [ ] 5. MeiliSearch統合と検索機能の実装
-  - [ ] 5.1 MeiliSearchクライアントを設定
+- [x] 5. MeiliSearch統合と検索機能の実装
+  - [x] 5.1 MeiliSearchクライアントを設定
     - MeiliSearchへの接続を設定
     - インデックス作成と設定
+    - 検索可能属性、フィルタ属性、ソート属性の設定
+    - ヘルスチェック機能
     - _要求: 2.1_
-  
-  - [ ] 5.2 用語の検索インデックス同期を実装
-    - 用語作成・更新時のインデックス更新
+
+  - [x] 5.2 用語の検索インデックス同期を実装
+    - 用語作成・更新・削除時の自動インデックス更新
     - バッチインデックス更新機能
+    - TermServiceとの統合（循環依存回避）
+    - コンテキスト変更時の同期
     - _要求: 2.1_
-  
-  - [ ] 5.3 検索機能を実装
+
+  - [x] 5.3 検索機能を実装
     - 全文検索クエリの実装（2秒以内のレスポンス）
-    - 検索結果のフォーマット（名前、定義プレビュー、コンテキスト）
-    - 検索頻度のトラッキング
+    - 検索結果のフォーマット（名前、定義、コンテキスト情報）
+    - コンテキストとステータスによるフィルタリング
+    - ページネーション機能
+    - オートコンプリート（サジェスト）機能
+    - インデックス統計とモニタリング
     - _要求: 2.1, 2.2, 8.3_
-  
-  - [ ] 5.4 検索APIエンドポイントを作成
-    - GET /api/search?q=:query - 用語検索
+
+  - [x] 5.4 検索APIエンドポイントを作成
+    - GET /api/search - 用語検索（フィルタ機能付き）
+    - GET /api/search/suggestions - オートコンプリート
+    - POST /api/search/index/rebuild - インデックス再構築
+    - GET /api/search/index/stats - インデックス統計
+    - POST /api/search/index/term/:id - 特定用語のインデックス化
+    - GET /api/search/health - MeiliSearch接続確認
     - _要求: 2.1, 2.2, 2.3_
 
-- [ ] 6. 用語関連性管理機能の実装
-  - [ ] 6.1 TermRelationshipエンティティとリポジトリを実装
+- [x] 6. 用語関連性管理機能の実装
+  - [x] 6.1 TermRelationshipエンティティとリポジトリを実装
     - TermRelationshipモデルクラスを作成
     - 関係の作成・削除機能
+    - 関係タイプ別検索機能
+    - 階層関係の取得機能
+    - 子孫検索機能（循環依存チェック用）
     - _要求: 7.1, 7.2_
-  
-  - [ ] 6.2 循環依存チェックロジックを実装
+
+  - [x] 6.2 循環依存チェックロジックを実装
     - グラフトラバーサルによる循環検出
     - 集約関係での循環依存防止
+    - 再帰的な子孫探索
     - _要求: 7.5_
-  
-  - [ ] 6.3 RelationshipServiceを実装
-    - 関係の作成・削除機能
-    - 用語の関連取得機能
+
+  - [x] 6.3 RelationshipServiceを実装
+    - 関係の作成・更新・削除機能
+    - 循環依存チェックの統合
+    - 用語の関連取得機能（詳細情報付き）
     - 図生成のためのデータ準備
-    - _要求: 7.1, 7.3, 7.4_
-  
-  - [ ] 6.4 関連性管理APIエンドポイントを作成
-    - POST /api/relationships - 関係作成
-    - DELETE /api/relationships/:id - 関係削除
-    - GET /api/terms/:id/relationships - 関連取得
-    - GET /api/contexts/:id/diagram - 図データ取得
+    - 階層ツリー構築機能
+    - 関係タイプ別の関連用語取得
     - _要求: 7.1, 7.3, 7.4_
 
-- [ ] 7. 議論と承認プロセスの実装
-  - [ ] 7.1 TermProposal、DiscussionThread、Commentエンティティを実装
-    - 各モデルクラスとリポジトリを作成
+  - [x] 6.4 関連性管理APIエンドポイントを作成
+    - POST /api/relationships - 関係作成
+    - GET /api/relationships/:id - 関係取得
+    - PUT /api/relationships/:id - 関係更新
+    - DELETE /api/relationships/:id - 関係削除
+    - GET /api/relationships/terms/:termId - 用語の関連取得
+    - GET /api/relationships/terms/:termId/type/:type - タイプ別関連取得
+    - DELETE /api/relationships/between/:sourceId/:targetId - 特定関係削除
+    - GET /api/relationships/contexts/:contextId/diagram - 図データ取得
+    - GET /api/relationships/hierarchy - 階層取得
+    - _要求: 7.1, 7.3, 7.4_
+
+- [x] 7. 議論と承認プロセスの実装
+  - [x] 7.1 TermProposal、DiscussionThread、Commentエンティティを実装
+    - TermProposalリポジトリとリポジトリを作成
+    - DiscussionThreadとCommentリポジトリを作成
+    - ステータス管理機能（pending/approved/rejected/on_hold）
+    - スレッド・コメント関係の管理
     - _要求: 10.1_
-  
-  - [ ] 7.2 DiscussionServiceを実装
-    - 用語候補の提案機能
+
+  - [x] 7.2 DiscussionServiceを実装
+    - 用語候補の提案機能（重複チェック付き）
     - 議論スレッドの作成とコメント追加
     - 承認・却下・保留の処理
-    - 承認時の用語登録と履歴保持
-    - _要求: 10.1, 10.2, 10.3, 10.4_
-  
-  - [ ] 7.3 議論と承認APIエンドポイントを作成
-    - POST /api/proposals - 用語候補提案
-    - POST /api/proposals/:id/approve - 承認
-    - POST /api/proposals/:id/reject - 却下
-    - POST /api/threads - スレッド作成
-    - POST /api/threads/:id/comments - コメント追加
-    - GET /api/threads/:id - スレッド取得
+    - 承認時の用語自動登録と履歴保持
+    - コメント権限チェック（自分のコメントのみ編集/削除可能）
+    - クローズされたスレッドへのコメント防止
     - _要求: 10.1, 10.2, 10.3, 10.4_
 
-- [ ] 8. 見直しサイクル管理の実装
-  - [ ] 8.1 Reviewエンティティとリポジトリを実装
+  - [x] 7.3 議論と承認APIエンドポイントを作成
+    - POST /api/proposals - 用語候補提案
+    - GET /api/proposals - 提案一覧取得（ステータスフィルタ）
+    - GET /api/proposals/:id - 提案取得
+    - PUT /api/proposals/:id - 提案更新
+    - POST /api/proposals/:id/approve - 承認（用語作成）
+    - POST /api/proposals/:id/reject - 却下（理由必須）
+    - POST /api/proposals/:id/hold - 保留
+    - DELETE /api/proposals/:id - 提案削除
+    - POST /api/discussions/threads - スレッド作成
+    - GET /api/discussions/threads - スレッド一覧取得
+    - GET /api/discussions/threads/:id - スレッド取得
+    - PUT /api/discussions/threads/:id - スレッド更新
+    - POST /api/discussions/threads/:id/close - スレッドクローズ
+    - POST /api/discussions/threads/:id/reopen - スレッド再開
+    - DELETE /api/discussions/threads/:id - スレッド削除
+    - POST /api/discussions/comments - コメント追加
+    - GET /api/discussions/threads/:threadId/comments - コメント取得
+    - GET /api/discussions/comments/:id - コメント取得
+    - PUT /api/discussions/comments/:id - コメント更新
+    - DELETE /api/discussions/comments/:id - コメント削除
+    - _要求: 10.1, 10.2, 10.3, 10.4_
+
+- [x] 8. 見直しサイクル管理の実装
+  - [x] 8.1 Reviewエンティティとリポジトリを実装
     - Reviewモデルクラスを作成
     - 見直し履歴の保存機能
     - _要求: 11.5_
-  
-  - [ ] 8.2 ReviewServiceを実装
+
+  - [x] 8.2 ReviewServiceを実装
     - 見直しスケジュール設定機能
     - 見直し期限到来の用語取得
     - 見直し実行と履歴記録
     - 通知送信機能
     - 「要議論」時の自動スレッド作成
     - _要求: 10.5, 11.1, 11.2, 11.3, 11.4, 11.5_
-  
-  - [ ] 8.3 見直し管理APIエンドポイントを作成
-    - POST /api/terms/:id/schedule-review - 見直しスケジュール設定
+
+  - [x] 8.3 見直し管理APIエンドポイントを作成
+    - POST /api/reviews/schedule - 見直しスケジュール設定
+    - DELETE /api/reviews/schedule/:termId - スケジュール解除
     - GET /api/reviews/due - 見直し期限到来の用語取得
     - POST /api/reviews - 見直し実行
-    - GET /api/terms/:id/reviews - 見直し履歴取得
+    - GET /api/reviews/terms/:termId - 見直し履歴取得
+    - GET /api/reviews/:id - 特定見直し取得
+    - POST /api/reviews/notifications - 通知送信
     - _要求: 11.1, 11.2, 11.3, 11.5_
 
 - [ ] 9. AI統合機能の実装
@@ -186,80 +241,93 @@
     - POST /api/ai/ask - 質問応答
     - _要求: 12.1, 12.2, 12.3, 12.4, 12.5_
 
-- [ ] 10. オンボーディング支援機能の実装
-  - [ ] 10.1 UserLearningエンティティとリポジトリを実装
+- [x] 10. オンボーディング支援機能の実装
+  - [x] 10.1 UserLearningエンティティとリポジトリを実装
     - UserLearningモデルクラスを作成
     - 学習済みマーキング機能
     - _要求: 5.2_
-  
-  - [ ] 10.2 オンボーディング機能を実装
+
+  - [x] 10.2 オンボーディング機能を実装
     - 必須用語の指定機能
     - 学習進捗の計算
     - 依存関係に基づく学習順序の生成
     - _要求: 5.1, 5.3, 5.4, 5.5_
-  
-  - [ ] 10.3 オンボーディングAPIエンドポイントを作成
+
+  - [x] 10.3 オンボーディングAPIエンドポイントを作成
     - GET /api/onboarding/essential-terms - 必須用語取得
+    - PUT /api/onboarding/essential-terms/:id - 必須用語指定
+    - DELETE /api/onboarding/essential-terms/:id - 必須用語解除
     - POST /api/onboarding/mark-learned - 学習済みマーク
-    - GET /api/onboarding/progress - 学習進捗取得
-    - PUT /api/terms/:id/essential - 必須用語指定
+    - DELETE /api/onboarding/mark-learned/:userId/:termId - 学習解除
+    - GET /api/onboarding/progress/:userId - 学習進捗取得
+    - GET /api/onboarding/learning-path/:userId - 学習パス取得
+    - GET /api/onboarding/next-terms/:userId - 次の推奨用語取得
+    - GET /api/onboarding/can-learn/:userId/:termId - 学習可能チェック
     - _要求: 5.1, 5.2, 5.3, 5.4_
 
-- [ ] 11. コード分析機能の実装
-  - [ ] 11.1 CodeAnalysisエンティティとリポジトリを実装
+- [x] 11. コード分析機能の実装
+  - [x] 11.1 CodeAnalysisエンティティとリポジトリを実装
     - CodeAnalysisモデルクラスを作成
     - 分析結果の保存機能
     - _要求: 6.1_
-  
-  - [ ] 11.2 コード要素抽出機能を実装
-    - TypeScript/JavaScriptパーサーを使用したクラス名、メソッド名、変数名の抽出
+
+  - [x] 11.2 コード要素抽出機能を実装
+    - Regex-based extraction for classes, methods, and variables
+    - TypeScript/JavaScript code element identification
     - _要求: 6.2_
-  
-  - [ ] 11.3 用語マッチング機能を実装
+
+  - [x] 11.3 用語マッチング機能を実装
     - 抽出要素と登録用語の比較
-    - 一致率の計算
-    - リネーム提案の生成
+    - 一致率の計算（Levenshtein距離ベース）
+    - リネーム提案の生成（類似度スコア付き）
+    - CamelCase aware matching
     - _要求: 6.3, 6.4, 6.5_
-  
-  - [ ] 11.4 コード分析APIエンドポイントを作成
-    - POST /api/code-analysis/upload - コードアップロード
-    - GET /api/code-analysis/:id/report - レポート取得
+
+  - [x] 11.4 コード分析APIエンドポイントを作成
+    - POST /api/code-analysis/upload - コードアップロードと分析
+    - GET /api/code-analysis/:id/report - 分析レポート取得
     - _要求: 6.1, 6.4_
 
-- [ ] 12. 分析とメトリクス機能の実装
-  - [ ] 12.1 AnalyticsServiceを実装
+- [x] 12. 分析とメトリクス機能の実装
+  - [x] 12.1 AnalyticsServiceを実装
     - ユーザーアクティビティのトラッキング
     - アクティブユーザー数の計算
     - カバレッジ率の計算
     - 最も閲覧・検索された用語の集計
     - _要求: 8.1, 8.2, 8.3_
-  
-  - [ ] 12.2 メトリクスエクスポート機能を実装
+
+  - [x] 12.2 メトリクスエクスポート機能を実装
     - CSV形式でのエクスポート
     - JSON形式でのエクスポート
     - _要求: 8.5_
-  
-  - [ ] 12.3 分析APIエンドポイントを作成
-    - GET /api/analytics/metrics - メトリクス取得
-    - GET /api/analytics/export - メトリクスエクスポート
+
+  - [x] 12.3 分析APIエンドポイントを作成
+    - GET /api/analytics/metrics - 全メトリクス取得
+    - GET /api/analytics/metrics/system - システムメトリクス取得
+    - GET /api/analytics/metrics/user-activity - ユーザーアクティビティメトリクス取得
+    - GET /api/analytics/metrics/coverage - カバレッジメトリクス取得
+    - GET /api/analytics/export - メトリクスエクスポート（JSON/CSV）
+    - GET /api/analytics/top-proposers - 最も活発な提案者取得
+    - GET /api/analytics/top-reviewers - 最も活発なレビュアー取得
     - _要求: 8.4, 8.5_
 
-- [ ] 13. エクスポート/インポート機能の実装
-  - [ ] 13.1 ExportServiceを実装
+- [x] 13. エクスポート/インポート機能の実装
+  - [x] 13.1 ExportServiceを実装
     - JSON形式でのエクスポート（全データ）
     - Markdown形式でのエクスポート（コンテキスト別整理）
     - _要求: 13.1, 13.2_
-  
-  - [ ] 13.2 インポート機能を実装
+
+  - [x] 13.2 インポート機能を実装
     - JSONデータのバリデーション
     - データのインポート処理
     - エラーレポート生成
     - _要求: 13.4, 13.5_
-  
-  - [ ] 13.3 エクスポート/インポートAPIエンドポイントを作成
+
+  - [x] 13.3 エクスポート/インポートAPIエンドポイントを作成
     - GET /api/export/json - JSONエクスポート
     - GET /api/export/markdown - Markdownエクスポート
-    - POST /api/import - インポート
+    - POST /api/import - インポート（skipExisting, validateOnly オプション付き）
+    - POST /api/import/validate - インポートデータ検証
     - _要求: 13.1, 13.2, 13.3, 13.4, 13.5_
 
 - [ ] 14. 認証と認可の実装
