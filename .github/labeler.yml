@@ -1,4 +1,4 @@
-# Label PRs based on changed files
+# 変更されたファイルに基づいてPRにラベルを付与
 
 api:
   - changed-files:

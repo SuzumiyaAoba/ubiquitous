@@ -1,45 +1,45 @@
 ---
-name: Bug Report
-about: Create a report to help us improve
+name: バグレポート
+about: 改善に役立つレポートを作成する
 title: '[BUG] '
 labels: bug
 assignees: ''
 ---
 
-## Bug Description
+## バグの説明
 
-<!-- A clear and concise description of what the bug is -->
+<!-- バグの内容を明確かつ簡潔に説明してください -->
 
-## Steps to Reproduce
+## 再現手順
 
 1.
 2.
 3.
 4.
 
-## Expected Behavior
+## 期待される動作
 
-<!-- A clear and concise description of what you expected to happen -->
+<!-- 期待していた動作を明確かつ簡潔に説明してください -->
 
-## Actual Behavior
+## 実際の動作
 
-<!-- A clear and concise description of what actually happened -->
+<!-- 実際に起こった動作を明確かつ簡潔に説明してください -->
 
-## Screenshots
+## スクリーンショット
 
-<!-- If applicable, add screenshots to help explain your problem -->
+<!-- 該当する場合、問題の説明に役立つスクリーンショットを追加してください -->
 
-## Environment
+## 環境
 
-- OS: [e.g., Ubuntu 22.04, macOS 14.0, Windows 11]
-- Node.js version: [e.g., 20.10.0]
-- npm version: [e.g., 10.2.4]
-- Browser (if applicable): [e.g., Chrome 120, Firefox 121]
+- OS: [例: Ubuntu 22.04, macOS 14.0, Windows 11]
+- Node.js バージョン: [例: 20.10.0]
+- npm バージョン: [例: 10.2.4]
+- ブラウザ（該当する場合）: [例: Chrome 120, Firefox 121]
 
-## Additional Context
+## 追加のコンテキスト
 
-<!-- Add any other context about the problem here -->
+<!-- 問題に関するその他のコンテキストをここに追加してください -->
 
-## Possible Solution
+## 可能な解決策
 
-<!-- If you have suggestions on how to fix the bug, please describe them here -->
+<!-- バグの修正方法について提案がある場合は、ここで説明してください -->

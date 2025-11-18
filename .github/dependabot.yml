@@ -1,6 +1,6 @@
 version: 2
 updates:
-  # Enable version updates for npm
+  # npm のバージョン更新を有効化
   - package-ecosystem: "npm"
     directory: "/"
     schedule:
@@ -17,7 +17,7 @@ updates:
       prefix: "chore(deps)"
       include: "scope"
 
-  # API workspace
+  # API ワークスペース
   - package-ecosystem: "npm"
     directory: "/apps/api"
     schedule:

@@ -1,51 +1,51 @@
 ---
-name: Feature Request
-about: Suggest an idea for this project
+name: 機能リクエスト
+about: このプロジェクトへのアイデアを提案する
 title: '[FEATURE] '
 labels: enhancement
 assignees: ''
 ---
 
-## Problem Statement
+## 問題の説明
 
-<!-- A clear and concise description of what the problem is. Ex. I'm always frustrated when [...] -->
+<!-- 問題の内容を明確かつ簡潔に説明してください。例: 〜するときにいつも困っている [...] -->
 
-## Proposed Solution
+## 提案する解決策
 
-<!-- A clear and concise description of what you want to happen -->
+<!-- 実現したいことを明確かつ簡潔に説明してください -->
 
-## Alternatives Considered
+## 検討した代替案
 
-<!-- A clear and concise description of any alternative solutions or features you've considered -->
+<!-- 検討した代替のソリューションや機能について明確かつ簡潔に説明してください -->
 
-## Benefits
+## メリット
 
-<!-- Describe the benefits this feature would bring -->
-
--
--
--
-
-## Potential Drawbacks
-
-<!-- Describe any potential drawbacks or challenges -->
+<!-- この機能がもたらすメリットを説明してください -->
 
 -
 -
+-
 
-## Implementation Ideas
+## 潜在的なデメリット
 
-<!-- If you have ideas on how to implement this feature, please share them -->
+<!-- 潜在的なデメリットや課題を説明してください -->
 
-## Additional Context
+-
+-
 
-<!-- Add any other context, mockups, or screenshots about the feature request here -->
+## 実装のアイデア
 
-## Priority
+<!-- この機能の実装方法についてアイデアがあれば、共有してください -->
 
-<!-- Mark the priority level with an 'x' -->
+## 追加のコンテキスト
 
-- [ ] Critical (blocks current work)
-- [ ] High (important for upcoming release)
-- [ ] Medium (nice to have soon)
-- [ ] Low (future consideration)
+<!-- 機能リクエストに関するその他のコンテキスト、モックアップ、スクリーンショットをここに追加してください -->
+
+## 優先度
+
+<!-- 該当する優先度レベルに 'x' を入れてください -->
+
+- [ ] 緊急（現在の作業をブロックしている）
+- [ ] 高（次のリリースに重要）
+- [ ] 中（早めに実装したい）
+- [ ] 低（将来的な検討事項）

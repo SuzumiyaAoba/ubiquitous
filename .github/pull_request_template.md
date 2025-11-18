@@ -1,58 +1,58 @@
-## Description
+## 説明
 
-<!-- Provide a brief description of the changes in this PR -->
+<!-- このPRでの変更内容を簡単に説明してください -->
 
-## Type of Change
+## 変更の種類
 
-<!-- Mark the relevant option with an 'x' -->
+<!-- 該当する項目に 'x' を入れてください -->
 
-- [ ] Bug fix (non-breaking change which fixes an issue)
-- [ ] New feature (non-breaking change which adds functionality)
-- [ ] Breaking change (fix or feature that would cause existing functionality to not work as expected)
-- [ ] Documentation update
-- [ ] Code refactoring
-- [ ] Performance improvement
-- [ ] Test addition or update
+- [ ] バグ修正（既存機能を壊さない変更）
+- [ ] 新機能（既存機能を壊さない変更）
+- [ ] 破壊的変更（既存の機能が期待通りに動作しなくなる修正や機能）
+- [ ] ドキュメントの更新
+- [ ] コードのリファクタリング
+- [ ] パフォーマンスの改善
+- [ ] テストの追加または更新
 
-## Related Issues
+## 関連Issue
 
-<!-- Link to related issues using #issue_number -->
+<!-- #issue_number を使用して関連するIssueにリンクしてください -->
 
 Closes #
 
-## Changes Made
+## 変更内容
 
-<!-- List the main changes made in this PR -->
+<!-- このPRでの主な変更点をリストアップしてください -->
 
 -
 -
 -
 
-## Testing
+## テスト
 
-<!-- Describe how you tested these changes -->
+<!-- これらの変更をどのようにテストしたか説明してください -->
 
-- [ ] All existing tests pass
-- [ ] New tests added to cover changes
-- [ ] Manual testing performed
+- [ ] 既存のすべてのテストが通過
+- [ ] 変更をカバーする新しいテストを追加
+- [ ] 手動テストを実施
 
-## Checklist
+## チェックリスト
 
-<!-- Mark completed items with an 'x' -->
+<!-- 完了した項目に 'x' を入れてください -->
 
-- [ ] My code follows the project's code style
-- [ ] I have performed a self-review of my own code
-- [ ] I have commented my code, particularly in hard-to-understand areas
-- [ ] I have made corresponding changes to the documentation
-- [ ] My changes generate no new warnings or errors
-- [ ] I have added tests that prove my fix is effective or that my feature works
-- [ ] New and existing unit tests pass locally with my changes
-- [ ] Any dependent changes have been merged and published
+- [ ] コードがプロジェクトのコードスタイルに従っている
+- [ ] 自分のコードをセルフレビューした
+- [ ] 理解しにくい部分にコメントを追加した
+- [ ] ドキュメントに対応する変更を行った
+- [ ] 変更により新しい警告やエラーが発生しない
+- [ ] 修正が有効であることを証明するテストを追加した、または機能が動作することを証明するテストを追加した
+- [ ] 新しいテストと既存のテストがローカルで通過する
+- [ ] 依存する変更がマージされ、公開されている
 
-## Screenshots (if applicable)
+## スクリーンショット（該当する場合）
 
-<!-- Add screenshots to help explain your changes -->
+<!-- 変更の説明に役立つスクリーンショットを追加してください -->
 
-## Additional Notes
+## 追加メモ
 
-<!-- Add any additional notes or context about the PR -->
+<!-- PRに関する追加のメモやコンテキストを追加してください -->

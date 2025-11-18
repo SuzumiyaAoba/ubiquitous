@@ -12,7 +12,7 @@ on:
 
 jobs:
   build:
-    name: Build and Test
+    name: ビルドとテスト
     runs-on: ubuntu-latest
 
     strategy:
@@ -20,45 +20,45 @@ jobs:
         node-version: [18.x, 20.x]
 
     steps:
-      - name: Checkout code
+      - name: コードをチェックアウト
         uses: actions/checkout@v4
 
-      - name: Setup Node.js ${{ matrix.node-version }}
+      - name: Node.js ${{ matrix.node-version }} をセットアップ
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
 
-      - name: Install dependencies
+      - name: 依存関係をインストール
         run: npm ci
 
-      - name: Build
+      - name: ビルド
         run: npm run build
 
-      - name: Lint
+      - name: リント
         run: npm run lint
         continue-on-error: true
 
-      - name: Test
+      - name: テスト
         run: npm run test
         continue-on-error: true
 
   typecheck:
-    name: TypeScript Type Check
+    name: TypeScript 型チェック
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
+      - name: コードをチェックアウト
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
+      - name: Node.js をセットアップ
         uses: actions/setup-node@v4
         with:
           node-version: '20.x'
           cache: 'npm'
 
-      - name: Install dependencies
+      - name: 依存関係をインストール
         run: npm ci
 
-      - name: Type check
+      - name: 型チェック
         run: npx turbo run build --filter=@ubiquitous/api

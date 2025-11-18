@@ -1,4 +1,4 @@
-name: CodeQL Security Scan
+name: CodeQL セキュリティスキャン
 
 on:
   push:
@@ -10,12 +10,12 @@ on:
       - main
       - develop
   schedule:
-    # Run at 00:00 UTC every Monday
+    # 毎週月曜日 00:00 UTC に実行
     - cron: '0 0 * * 1'
 
 jobs:
   analyze:
-    name: Analyze Code
+    name: コード分析
     runs-on: ubuntu-latest
     permissions:
       actions: read
@@ -28,19 +28,19 @@ jobs:
         language: ['javascript']
 
     steps:
-      - name: Checkout code
+      - name: コードをチェックアウト
         uses: actions/checkout@v4
 
-      - name: Initialize CodeQL
+      - name: CodeQL を初期化
         uses: github/codeql-action/init@v3
         with:
           languages: ${{ matrix.language }}
           queries: security-extended,security-and-quality
 
-      - name: Autobuild
+      - name: 自動ビルド
         uses: github/codeql-action/autobuild@v3
 
-      - name: Perform CodeQL Analysis
+      - name: CodeQL 分析を実行
         uses: github/codeql-action/analyze@v3
         with:
           category: "/language:${{ matrix.language }}"
