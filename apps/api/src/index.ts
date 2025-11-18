@@ -14,6 +14,7 @@ import { discussionsRouter } from './routes/discussions.routes';
 import { reviewsRouter } from './routes/reviews.routes';
 import { onboardingRouter } from './routes/onboarding.routes';
 import { analyticsRouter } from './routes/analytics.routes';
+import { exportImportRouter } from './routes/export-import.routes';
 import { termService } from './services/term.service';
 import { searchService } from './services/search.service';
 
@@ -46,6 +47,7 @@ app.route('/api/discussions', discussionsRouter);
 app.route('/api/reviews', reviewsRouter);
 app.route('/api/onboarding', onboardingRouter);
 app.route('/api/analytics', analyticsRouter);
+app.route('/api', exportImportRouter);
 
 const port = Number(process.env.PORT) || 3001;
 

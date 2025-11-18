@@ -77,6 +77,18 @@ export class ContextRepository {
 
     return !!context;
   }
+
+  /**
+   * Find a context by name
+   */
+  async findByName(name: string) {
+    const [context] = await db
+      .select()
+      .from(contexts)
+      .where(eq(contexts.name, name));
+
+    return context || null;
+  }
 }
 
 export const contextRepository = new ContextRepository();

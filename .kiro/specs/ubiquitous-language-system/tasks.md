@@ -309,22 +309,23 @@
     - GET /api/analytics/top-reviewers - 最も活発なレビュアー取得
     - _要求: 8.4, 8.5_
 
-- [ ] 13. エクスポート/インポート機能の実装
-  - [ ] 13.1 ExportServiceを実装
+- [x] 13. エクスポート/インポート機能の実装
+  - [x] 13.1 ExportServiceを実装
     - JSON形式でのエクスポート（全データ）
     - Markdown形式でのエクスポート（コンテキスト別整理）
     - _要求: 13.1, 13.2_
-  
-  - [ ] 13.2 インポート機能を実装
+
+  - [x] 13.2 インポート機能を実装
     - JSONデータのバリデーション
     - データのインポート処理
     - エラーレポート生成
     - _要求: 13.4, 13.5_
-  
-  - [ ] 13.3 エクスポート/インポートAPIエンドポイントを作成
+
+  - [x] 13.3 エクスポート/インポートAPIエンドポイントを作成
     - GET /api/export/json - JSONエクスポート
     - GET /api/export/markdown - Markdownエクスポート
-    - POST /api/import - インポート
+    - POST /api/import - インポート（skipExisting, validateOnly オプション付き）
+    - POST /api/import/validate - インポートデータ検証
     - _要求: 13.1, 13.2, 13.3, 13.4, 13.5_
 
 - [ ] 14. 認証と認可の実装
