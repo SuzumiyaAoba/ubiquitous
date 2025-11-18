@@ -105,28 +105,40 @@
     - GET /api/search/health - MeiliSearch接続確認
     - _要求: 2.1, 2.2, 2.3_
 
-- [ ] 6. 用語関連性管理機能の実装
-  - [ ] 6.1 TermRelationshipエンティティとリポジトリを実装
+- [x] 6. 用語関連性管理機能の実装
+  - [x] 6.1 TermRelationshipエンティティとリポジトリを実装
     - TermRelationshipモデルクラスを作成
     - 関係の作成・削除機能
+    - 関係タイプ別検索機能
+    - 階層関係の取得機能
+    - 子孫検索機能（循環依存チェック用）
     - _要求: 7.1, 7.2_
-  
-  - [ ] 6.2 循環依存チェックロジックを実装
+
+  - [x] 6.2 循環依存チェックロジックを実装
     - グラフトラバーサルによる循環検出
     - 集約関係での循環依存防止
+    - 再帰的な子孫探索
     - _要求: 7.5_
-  
-  - [ ] 6.3 RelationshipServiceを実装
-    - 関係の作成・削除機能
-    - 用語の関連取得機能
+
+  - [x] 6.3 RelationshipServiceを実装
+    - 関係の作成・更新・削除機能
+    - 循環依存チェックの統合
+    - 用語の関連取得機能（詳細情報付き）
     - 図生成のためのデータ準備
+    - 階層ツリー構築機能
+    - 関係タイプ別の関連用語取得
     - _要求: 7.1, 7.3, 7.4_
-  
-  - [ ] 6.4 関連性管理APIエンドポイントを作成
+
+  - [x] 6.4 関連性管理APIエンドポイントを作成
     - POST /api/relationships - 関係作成
+    - GET /api/relationships/:id - 関係取得
+    - PUT /api/relationships/:id - 関係更新
     - DELETE /api/relationships/:id - 関係削除
-    - GET /api/terms/:id/relationships - 関連取得
-    - GET /api/contexts/:id/diagram - 図データ取得
+    - GET /api/relationships/terms/:termId - 用語の関連取得
+    - GET /api/relationships/terms/:termId/type/:type - タイプ別関連取得
+    - DELETE /api/relationships/between/:sourceId/:targetId - 特定関係削除
+    - GET /api/relationships/contexts/:contextId/diagram - 図データ取得
+    - GET /api/relationships/hierarchy - 階層取得
     - _要求: 7.1, 7.3, 7.4_
 
 - [ ] 7. 議論と承認プロセスの実装
