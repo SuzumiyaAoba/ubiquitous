@@ -12,6 +12,8 @@ export interface UpdateTermDto {
   name?: string;
   description?: string;
   status?: 'draft' | 'active' | 'deprecated';
+  nextReviewDate?: Date | null;
+  reviewInterval?: number | null;
 }
 
 export interface AddTermToContextDto {

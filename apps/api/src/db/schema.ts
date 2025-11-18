@@ -16,6 +16,8 @@ export const terms = pgTable('terms', {
   name: varchar('name', { length: 255 }).notNull(),
   description: text('description'),
   status: termStatusEnum('status').default('draft').notNull(),
+  nextReviewDate: timestamp('next_review_date'),
+  reviewInterval: integer('review_interval'), // days between reviews
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });

@@ -181,25 +181,28 @@
     - DELETE /api/discussions/comments/:id - コメント削除
     - _要求: 10.1, 10.2, 10.3, 10.4_
 
-- [ ] 8. 見直しサイクル管理の実装
-  - [ ] 8.1 Reviewエンティティとリポジトリを実装
+- [x] 8. 見直しサイクル管理の実装
+  - [x] 8.1 Reviewエンティティとリポジトリを実装
     - Reviewモデルクラスを作成
     - 見直し履歴の保存機能
     - _要求: 11.5_
-  
-  - [ ] 8.2 ReviewServiceを実装
+
+  - [x] 8.2 ReviewServiceを実装
     - 見直しスケジュール設定機能
     - 見直し期限到来の用語取得
     - 見直し実行と履歴記録
     - 通知送信機能
     - 「要議論」時の自動スレッド作成
     - _要求: 10.5, 11.1, 11.2, 11.3, 11.4, 11.5_
-  
-  - [ ] 8.3 見直し管理APIエンドポイントを作成
-    - POST /api/terms/:id/schedule-review - 見直しスケジュール設定
+
+  - [x] 8.3 見直し管理APIエンドポイントを作成
+    - POST /api/reviews/schedule - 見直しスケジュール設定
+    - DELETE /api/reviews/schedule/:termId - スケジュール解除
     - GET /api/reviews/due - 見直し期限到来の用語取得
     - POST /api/reviews - 見直し実行
-    - GET /api/terms/:id/reviews - 見直し履歴取得
+    - GET /api/reviews/terms/:termId - 見直し履歴取得
+    - GET /api/reviews/:id - 特定見直し取得
+    - POST /api/reviews/notifications - 通知送信
     - _要求: 11.1, 11.2, 11.3, 11.5_
 
 - [ ] 9. AI統合機能の実装
