@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Question or Discussion
+    url: https://github.com/SuzumiyaAoba/ubiquitous/discussions
+    about: Ask questions or start discussions about the project
+  - name: Documentation
+    url: https://github.com/SuzumiyaAoba/ubiquitous/blob/main/README.md
+    about: Check the documentation for usage guides and API references
