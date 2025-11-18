@@ -8,6 +8,7 @@ import { validateDbConfig } from './db/config';
 import { contextsRouter } from './routes/contexts.routes';
 import { termsRouter } from './routes/terms.routes';
 import { searchRouter } from './routes/search.routes';
+import { relationshipsRouter } from './routes/relationships.routes';
 import { termService } from './services/term.service';
 import { searchService } from './services/search.service';
 
@@ -34,6 +35,7 @@ app.get('/api', (c) => {
 app.route('/api/contexts', contextsRouter);
 app.route('/api/terms', termsRouter);
 app.route('/api/search', searchRouter);
+app.route('/api/relationships', relationshipsRouter);
 
 const port = Number(process.env.PORT) || 3001;
 
