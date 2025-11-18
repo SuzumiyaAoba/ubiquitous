@@ -27,7 +27,7 @@ export interface RejectProposalDto {
 
 export class TermProposalRepository {
   /**
-   * Create a new term proposal
+   * 新しい用語提案を作成
    */
   async create(data: CreateTermProposalDto) {
     const [proposal] = await db
@@ -45,7 +45,7 @@ export class TermProposalRepository {
   }
 
   /**
-   * Find a proposal by ID
+   * IDで提案を検索
    */
   async findById(id: string) {
     const [proposal] = await db
@@ -57,7 +57,7 @@ export class TermProposalRepository {
   }
 
   /**
-   * Find all proposals
+   * すべての提案を取得
    */
   async findAll() {
     return await db
@@ -67,7 +67,7 @@ export class TermProposalRepository {
   }
 
   /**
-   * Find proposals by status
+   * ステータスで提案を検索
    */
   async findByStatus(status: ProposalStatus) {
     return await db
@@ -78,7 +78,7 @@ export class TermProposalRepository {
   }
 
   /**
-   * Find proposals by context
+   * コンテキストで提案を検索
    */
   async findByContextId(contextId: string) {
     return await db
@@ -89,7 +89,7 @@ export class TermProposalRepository {
   }
 
   /**
-   * Find proposals by proposer
+   * 提案者で提案を検索
    */
   async findByProposer(proposedBy: string) {
     return await db
@@ -100,7 +100,7 @@ export class TermProposalRepository {
   }
 
   /**
-   * Update a proposal
+   * 提案を更新
    */
   async update(id: string, data: UpdateTermProposalDto) {
     const [updated] = await db
@@ -113,7 +113,7 @@ export class TermProposalRepository {
   }
 
   /**
-   * Approve a proposal
+   * 提案を承認
    */
   async approve(id: string, approvedBy: string) {
     const [updated] = await db
@@ -130,7 +130,7 @@ export class TermProposalRepository {
   }
 
   /**
-   * Reject a proposal
+   * 提案を却下
    */
   async reject(id: string, rejectionReason: string) {
     const [updated] = await db
@@ -146,7 +146,7 @@ export class TermProposalRepository {
   }
 
   /**
-   * Put proposal on hold
+   * 提案を保留に設定
    */
   async putOnHold(id: string) {
     const [updated] = await db
@@ -161,7 +161,7 @@ export class TermProposalRepository {
   }
 
   /**
-   * Delete a proposal
+   * 提案を削除
    */
   async delete(id: string) {
     const [deleted] = await db

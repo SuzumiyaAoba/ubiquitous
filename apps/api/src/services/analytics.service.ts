@@ -42,7 +42,7 @@ export type ExportFormat = 'json' | 'csv';
 
 export class AnalyticsService {
   /**
-   * Get comprehensive system metrics
+   * 包括的なシステムメトリクスを取得
    */
   async getSystemMetrics(): Promise<SystemMetrics> {
     const allTerms = await termRepository.findAll();
@@ -54,12 +54,12 @@ export class AnalyticsService {
     const openThreads = await discussionRepository.findThreadsByStatus('open');
     const essentialTerms = await termRepository.findEssentialTerms();
 
-    // Count terms by status
+    // ステータス別にターム数をカウント
     const activeTerms = allTerms.filter((t) => t.status === 'active').length;
     const draftTerms = allTerms.filter((t) => t.status === 'draft').length;
     const deprecatedTerms = allTerms.filter((t) => t.status === 'deprecated').length;
 
-    // Count total reviews across all terms
+    // すべてのターム全体のレビュー数をカウント
     let totalReviews = 0;
     for (const term of allTerms) {
       totalReviews += await reviewRepository.countReviewsForTerm(term.id);
@@ -83,7 +83,7 @@ export class AnalyticsService {
   }
 
   /**
-   * Get user activity metrics
+   * ユーザー活動メトリクスを取得
    */
   async getUserActivityMetrics(): Promise<UserActivityMetrics> {
     const allProposals = await termProposalRepository.findAll();
@@ -92,16 +92,16 @@ export class AnalyticsService {
         .then((needsUpdate) => reviewRepository.findByStatus('needs_discussion')
           .then((needsDiscussion) => [...confirmed, ...needsUpdate, ...needsDiscussion])));
 
-    // Get unique users from different activities
+    // 異なるアクティビティからユニークユーザーを取得
     const uniqueProposers = new Set(allProposals.map((p) => p.proposedBy));
     const uniqueReviewers = new Set(allReviews.map((r) => r.reviewedBy));
 
-    // For learners, we need to get all user learning records
-    // Since there's no findAll method, we'll use a workaround
-    // This is a placeholder - in production, you'd want a proper method
+    // 学習者については、すべてのユーザー学習記録を取得する必要があります
+    // findAllメソッドがないため、回避策を使用します
+    // これはプレースホルダーです。本番環境では、適切なメソッドが必要です
     const uniqueLearners = new Set<string>();
 
-    // Get unique commenters from all threads
+    // すべてのスレッドからユニークコメンターを取得
     const uniqueCommenters = new Set<string>();
     const allThreads = await discussionRepository.findAllThreads();
     for (const thread of allThreads) {
@@ -109,7 +109,7 @@ export class AnalyticsService {
       comments.forEach((comment) => uniqueCommenters.add(comment.postedBy));
     }
 
-    // Combine all active users
+    // すべてのアクティブユーザーを結合
     const allActiveUsers = new Set([
       ...uniqueProposers,
       ...uniqueReviewers,
@@ -127,7 +127,7 @@ export class AnalyticsService {
   }
 
   /**
-   * Get coverage metrics
+   * カバレッジメトリクスを取得
    */
   async getCoverageMetrics(): Promise<CoverageMetrics> {
     const allTerms = await termRepository.findAll();
@@ -145,8 +145,8 @@ export class AnalyticsService {
         totalContextCount += withContexts.contexts.length;
       }
 
-      // Check for relationships (placeholder)
-      // In a real implementation, you'd check the relationship repository
+      // 関係を確認（プレースホルダー）
+      // 実装では、リレーションシップリポジトリを確認します
 
       const reviewCount = await reviewRepository.countReviewsForTerm(term.id);
       if (reviewCount > 0) {
@@ -167,7 +167,7 @@ export class AnalyticsService {
   }
 
   /**
-   * Get all metrics combined
+   * すべてのメトリクスを結合して取得
    */
   async getAllMetrics() {
     const [systemMetrics, userActivityMetrics, coverageMetrics] = await Promise.all([
@@ -184,7 +184,7 @@ export class AnalyticsService {
   }
 
   /**
-   * Export metrics in specified format
+   * 指定された形式でメトリクスをエクスポート
    */
   async exportMetrics(format: ExportFormat): Promise<string> {
     const metrics = await this.getAllMetrics();
@@ -201,15 +201,15 @@ export class AnalyticsService {
   }
 
   /**
-   * Convert metrics to CSV format
+   * メトリクスをCSV形式に変換
    */
   private convertMetricsToCSV(metrics: any): string {
     const lines: string[] = [];
 
-    // Header
+    // ヘッダー
     lines.push('Category,Metric,Value');
 
-    // System metrics
+    // システムメトリクス
     lines.push('System,Total Terms,' + metrics.system.totalTerms);
     lines.push('System,Active Terms,' + metrics.system.activeTerms);
     lines.push('System,Draft Terms,' + metrics.system.draftTerms);
@@ -223,14 +223,14 @@ export class AnalyticsService {
     lines.push('System,Total Reviews,' + metrics.system.totalReviews);
     lines.push('System,Essential Terms,' + metrics.system.essentialTerms);
 
-    // User activity metrics
+    // ユーザー活動メトリクス
     lines.push('User Activity,Unique Reviewers,' + metrics.userActivity.uniqueReviewers);
     lines.push('User Activity,Unique Learners,' + metrics.userActivity.uniqueLearners);
     lines.push('User Activity,Unique Proposers,' + metrics.userActivity.uniqueProposers);
     lines.push('User Activity,Unique Commenters,' + metrics.userActivity.uniqueCommenters);
     lines.push('User Activity,Total Active Users,' + metrics.userActivity.totalActiveUsers);
 
-    // Coverage metrics
+    // カバレッジメトリクス
     lines.push('Coverage,Total Terms,' + metrics.coverage.totalTerms);
     lines.push('Coverage,Terms with Contexts,' + metrics.coverage.termsWithContexts);
     lines.push('Coverage,Terms with Relationships,' + metrics.coverage.termsWithRelationships);
@@ -242,19 +242,19 @@ export class AnalyticsService {
   }
 
   /**
-   * Get most active proposers (placeholder for future tracking)
+   * 最もアクティブな提案者を取得（今後の追跡用プレースホルダー）
    */
   async getMostActiveProposers(limit: number = 10) {
     const allProposals = await termProposalRepository.findAll();
 
-    // Count proposals per proposer
+    // 提案者ごとの提案数をカウント
     const proposerCounts = new Map<string, number>();
     allProposals.forEach((proposal) => {
       const count = proposerCounts.get(proposal.proposedBy) || 0;
       proposerCounts.set(proposal.proposedBy, count + 1);
     });
 
-    // Sort by count and take top N
+    // 数でソートしてトップNを取得
     const sorted = Array.from(proposerCounts.entries())
       .sort((a, b) => b[1] - a[1])
       .slice(0, limit);
@@ -266,7 +266,7 @@ export class AnalyticsService {
   }
 
   /**
-   * Get most active reviewers (placeholder for future tracking)
+   * 最もアクティブなレビュアーを取得（今後の追跡用プレースホルダー）
    */
   async getMostActiveReviewers(limit: number = 10) {
     const allReviews = await reviewRepository.findByStatus('confirmed')
@@ -274,14 +274,14 @@ export class AnalyticsService {
         .then((needsUpdate) => reviewRepository.findByStatus('needs_discussion')
           .then((needsDiscussion) => [...confirmed, ...needsUpdate, ...needsDiscussion])));
 
-    // Count reviews per reviewer
+    // レビュアーごとのレビュー数をカウント
     const reviewerCounts = new Map<string, number>();
     allReviews.forEach((review) => {
       const count = reviewerCounts.get(review.reviewedBy) || 0;
       reviewerCounts.set(review.reviewedBy, count + 1);
     });
 
-    // Sort by count and take top N
+    // 数でソートしてトップNを取得
     const sorted = Array.from(reviewerCounts.entries())
       .sort((a, b) => b[1] - a[1])
       .slice(0, limit);

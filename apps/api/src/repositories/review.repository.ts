@@ -13,7 +13,7 @@ export interface CreateReviewDto {
 
 export class ReviewRepository {
   /**
-   * Create a new review
+   * 新しいレビューを作成
    */
   async create(data: CreateReviewDto) {
     const [review] = await db
@@ -30,7 +30,7 @@ export class ReviewRepository {
   }
 
   /**
-   * Find a review by ID
+   * IDでレビューを検索
    */
   async findById(id: string) {
     const [review] = await db
@@ -42,7 +42,7 @@ export class ReviewRepository {
   }
 
   /**
-   * Find all reviews for a term
+   * 用語のすべてのレビューを取得
    */
   async findByTermId(termId: string) {
     return await db
@@ -53,7 +53,7 @@ export class ReviewRepository {
   }
 
   /**
-   * Find reviews by reviewer
+   * レビュー者でレビューを検索
    */
   async findByReviewer(reviewedBy: string) {
     return await db
@@ -64,7 +64,7 @@ export class ReviewRepository {
   }
 
   /**
-   * Find reviews by status
+   * ステータスでレビューを検索
    */
   async findByStatus(status: ReviewStatus) {
     return await db
@@ -75,7 +75,7 @@ export class ReviewRepository {
   }
 
   /**
-   * Get the latest review for a term
+   * 用語の最新レビューを取得
    */
   async getLatestReview(termId: string) {
     const [review] = await db
@@ -89,7 +89,7 @@ export class ReviewRepository {
   }
 
   /**
-   * Delete a review
+   * レビューを削除
    */
   async delete(id: string) {
     const [deleted] = await db
@@ -101,7 +101,7 @@ export class ReviewRepository {
   }
 
   /**
-   * Get terms due for review
+   * レビュー予定の用語を取得
    */
   async getTermsDueForReview(asOfDate?: Date) {
     const checkDate = asOfDate || new Date();
@@ -119,7 +119,7 @@ export class ReviewRepository {
   }
 
   /**
-   * Count reviews for a term
+   * 用語のレビュー数をカウント
    */
   async countReviewsForTerm(termId: string): Promise<number> {
     const termReviews = await this.findByTermId(termId);

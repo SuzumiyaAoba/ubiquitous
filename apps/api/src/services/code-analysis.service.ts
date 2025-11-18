@@ -29,17 +29,17 @@ export interface AnalysisReport {
 
 export class CodeAnalysisService {
   /**
-   * Analyze code and generate report
+   * コードを分析してレポートを生成
    */
   async analyzeCode(fileName: string, code: string, uploadedBy: string): Promise<string> {
-    // Extract code elements
+    // コード要素を抽出
     const elements = this.extractCodeElements(code);
 
-    // Get all terms for matching
+    // マッチング用のすべてのタームを取得
     const terms = await termRepository.findAll();
     const termNames = terms.map((t) => t.name.toLowerCase());
 
-    // Match elements with terms
+    // 要素をタームでマッチング
     const matchedElements: CodeElement[] = [];
     for (const element of elements) {
       const normalizedName = this.normalizeIdentifier(element.name);
@@ -62,7 +62,7 @@ export class CodeAnalysisService {
           matchedTerm: matchedTerm?.name,
         });
       } else {
-        // Generate suggestions
+        // 提案を生成
         const suggestions = this.generateSuggestions(element.name, termNames);
         matchedElements.push({
           ...element,
@@ -72,12 +72,12 @@ export class CodeAnalysisService {
       }
     }
 
-    // Calculate match rate
+    // マッチレートを計算
     const matchRate = elements.length > 0
       ? (matchedElements.filter((e) => e.matched).length / elements.length) * 100
       : 0;
 
-    // Save analysis
+    // 分析を保存
     const analysis = await codeAnalysisRepository.create({
       fileName,
       uploadedBy,
@@ -89,7 +89,7 @@ export class CodeAnalysisService {
   }
 
   /**
-   * Get analysis report
+   * 分析レポートを取得
    */
   async getReport(analysisId: string): Promise<AnalysisReport | null> {
     const analysis = await codeAnalysisRepository.findById(analysisId);
@@ -101,7 +101,7 @@ export class CodeAnalysisService {
     const matchedElements = elements.filter((e) => e.matched);
     const unmatchedElements = elements.filter((e) => !e.matched);
 
-    // Generate rename suggestions
+    // リネーム提案を生成
     const suggestions = unmatchedElements
       .filter((e) => e.suggestions && e.suggestions.length > 0)
       .map((e) => ({
@@ -125,13 +125,13 @@ export class CodeAnalysisService {
   }
 
   /**
-   * Extract code elements from source code
+   * ソースコードからコード要素を抽出
    */
   private extractCodeElements(code: string): CodeElement[] {
     const elements: CodeElement[] = [];
     const lines = code.split('\n');
 
-    // Extract classes
+    // クラスを抽出
     const classRegex = /(?:export\s+)?(?:abstract\s+)?class\s+(\w+)/g;
     lines.forEach((line, index) => {
       let match;
@@ -145,13 +145,13 @@ export class CodeAnalysisService {
       }
     });
 
-    // Extract methods/functions
+    // メソッド/関数を抽出
     const methodRegex = /(?:async\s+)?(?:function\s+)?(\w+)\s*\([^)]*\)\s*(?::\s*\w+\s*)?{/g;
     lines.forEach((line, index) => {
       let match;
       while ((match = methodRegex.exec(line)) !== null) {
         const name = match[1];
-        // Skip common keywords
+        // 一般的なキーワードをスキップ
         if (!['if', 'for', 'while', 'switch', 'catch'].includes(name)) {
           elements.push({
             type: 'method',
@@ -163,7 +163,7 @@ export class CodeAnalysisService {
       }
     });
 
-    // Extract variables (const, let, var)
+    // 変数を抽出（const、let、var）
     const varRegex = /(?:const|let|var)\s+(\w+)\s*[=:]/g;
     lines.forEach((line, index) => {
       let match;
@@ -181,10 +181,10 @@ export class CodeAnalysisService {
   }
 
   /**
-   * Normalize identifier for matching
+   * マッチング用に識別子を正規化
    */
   private normalizeIdentifier(identifier: string): string {
-    // Convert camelCase to space-separated words
+    // camelCaseをスペース区切りの単語に変換
     return identifier
       .replace(/([a-z])([A-Z])/g, '$1 $2')
       .toLowerCase()
@@ -192,7 +192,7 @@ export class CodeAnalysisService {
   }
 
   /**
-   * Check if two names match (case-insensitive, camelCase aware)
+   * 2つの名前が一致するかをチェック（大文字小文字を区別せず、camelCase対応）
    */
   private isMatch(identifier: string, termName: string): boolean {
     const normalizedId = this.normalizeIdentifier(identifier);
@@ -207,7 +207,7 @@ export class CodeAnalysisService {
   }
 
   /**
-   * Check if identifier contains term as camelCase component
+   * 識別子がcamelCaseコンポーネントとしてターム含むかをチェック
    */
   private isCamelCaseMatch(identifier: string, termName: string): boolean {
     const words = identifier.split(/(?=[A-Z])/);
@@ -216,7 +216,7 @@ export class CodeAnalysisService {
   }
 
   /**
-   * Generate rename suggestions
+   * リネーム提案を生成
    */
   private generateSuggestions(identifier: string, termNames: string[]): string[] {
     const normalized = this.normalizeIdentifier(identifier);
@@ -227,12 +227,12 @@ export class CodeAnalysisService {
       const score = this.calculateSimilarity(normalized, normalizedTerm);
 
       if (score > 0.5) {
-        // At least 50% similarity
+        // 最低50％の類似性
         suggestions.push({ term: termName, score });
       }
     }
 
-    // Sort by score descending and return top 3
+    // スコアで降順にソートして上位3つを返す
     return suggestions
       .sort((a, b) => b.score - a.score)
       .slice(0, 3)
@@ -240,7 +240,7 @@ export class CodeAnalysisService {
   }
 
   /**
-   * Calculate similarity between two strings (simple Levenshtein-based)
+   * 2つの文字列間の類似度を計算（シンプルなレーベンシュタイン距離ベース）
    */
   private calculateSimilarity(str1: string, str2: string): number {
     const longer = str1.length > str2.length ? str1 : str2;
@@ -255,7 +255,7 @@ export class CodeAnalysisService {
   }
 
   /**
-   * Calculate Levenshtein distance
+   * レーベンシュタイン距離を計算
    */
   private levenshteinDistance(str1: string, str2: string): number {
     const matrix: number[][] = [];

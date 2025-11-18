@@ -9,10 +9,10 @@ export interface MarkLearnedDto {
 
 export class UserLearningRepository {
   /**
-   * Mark a term as learned by a user
+   * ユーザーが用語を学習済みとしてマーク
    */
   async markAsLearned(data: MarkLearnedDto) {
-    // Check if already marked as learned
+    // 既に学習済みとしてマークされているか確認
     const existing = await this.findByUserAndTerm(data.userId, data.termId);
     if (existing) {
       return existing;
@@ -30,7 +30,7 @@ export class UserLearningRepository {
   }
 
   /**
-   * Unmark a term as learned
+   * 用語の学習済みマークを解除
    */
   async unmarkAsLearned(userId: string, termId: string) {
     const [deleted] = await db
@@ -47,7 +47,7 @@ export class UserLearningRepository {
   }
 
   /**
-   * Find a learning record by user and term
+   * ユーザーと用語で学習レコードを検索
    */
   async findByUserAndTerm(userId: string, termId: string) {
     const [record] = await db
@@ -64,7 +64,7 @@ export class UserLearningRepository {
   }
 
   /**
-   * Get all learned terms for a user
+   * ユーザーのすべての学習済み用語を取得
    */
   async findLearnedByUser(userId: string) {
     return await db
@@ -74,7 +74,7 @@ export class UserLearningRepository {
   }
 
   /**
-   * Get learned term IDs for a user
+   * ユーザーの学習済み用語IDを取得
    */
   async getLearnedTermIds(userId: string): Promise<string[]> {
     const records = await this.findLearnedByUser(userId);
@@ -82,7 +82,7 @@ export class UserLearningRepository {
   }
 
   /**
-   * Check if a user has learned a term
+   * ユーザーが用語を学習したか確認
    */
   async hasLearned(userId: string, termId: string): Promise<boolean> {
     const record = await this.findByUserAndTerm(userId, termId);
@@ -90,7 +90,7 @@ export class UserLearningRepository {
   }
 
   /**
-   * Get learning count for a user
+   * ユーザーの学習数をカウント
    */
   async countLearnedTerms(userId: string): Promise<number> {
     const records = await this.findLearnedByUser(userId);
@@ -98,7 +98,7 @@ export class UserLearningRepository {
   }
 
   /**
-   * Get users who learned a specific term
+   * 特定の用語を学習したユーザーを取得
    */
   async findUsersWhoLearned(termId: string) {
     return await db
@@ -108,7 +108,7 @@ export class UserLearningRepository {
   }
 
   /**
-   * Bulk mark terms as learned
+   * 複数の用語を一括で学習済みとしてマーク
    */
   async bulkMarkAsLearned(userId: string, termIds: string[]) {
     const records = await Promise.all(
@@ -118,7 +118,7 @@ export class UserLearningRepository {
   }
 
   /**
-   * Get learning statistics for a user
+   * ユーザーの学習統計を取得
    */
   async getUserLearningStats(userId: string, essentialTermIds: string[]) {
     const learnedTermIds = await this.getLearnedTermIds(userId);

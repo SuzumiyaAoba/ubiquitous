@@ -1,3 +1,9 @@
+/**
+ * @file 用語間関係管理ルート
+ * @description 用語間の関係（同義語、反義語、親子関係など）の作成、管理、
+ * 関連用語の取得のエンドポイントを定義します。
+ */
+
 import { Hono } from 'hono';
 import { relationshipService } from '../services/relationship.service';
 import type { CreateTermRelationshipDto, UpdateTermRelationshipDto, RelationshipType } from '../repositories/term-relationship.repository';
@@ -5,8 +11,17 @@ import type { CreateTermRelationshipDto, UpdateTermRelationshipDto, Relationship
 export const relationshipsRouter = new Hono();
 
 /**
- * POST /api/relationships
- * Create a new relationship between terms
+ * 2つの用語間に新しい関係を作成します。
+ * @route POST /api/relationships
+ * @param {object} body - 関係作成データ
+ * @param {string} body.sourceTermId - ソース用語ID（必須）
+ * @param {string} body.targetTermId - ターゲット用語ID（必須）
+ * @param {string} body.relationshipType - 関係タイプ（必須、synonym/antonym/related/parent/child）
+ * @returns {object} 201 - 作成された関係オブジェクト
+ * @returns {object} 400 - バリデーションエラー、無効な関係タイプ、または循環依存
+ * @returns {object} 404 - 用語が見つからない場合
+ * @returns {object} 409 - 既に同じ関係が存在する場合
+ * @returns {object} 500 - サーバーエラー
  */
 relationshipsRouter.post('/', async (c) => {
   try {
@@ -47,8 +62,12 @@ relationshipsRouter.post('/', async (c) => {
 });
 
 /**
- * GET /api/relationships/:id
- * Get a specific relationship by ID
+ * IDで指定された用語間の関係を取得します。
+ * @route GET /api/relationships/:id
+ * @param {string} id - 関係ID
+ * @returns {object} 200 - 関係オブジェクト
+ * @returns {object} 404 - 関係が見つからない場合
+ * @returns {object} 500 - サーバーエラー
  */
 relationshipsRouter.get('/:id', async (c) => {
   try {
@@ -66,8 +85,15 @@ relationshipsRouter.get('/:id', async (c) => {
 });
 
 /**
- * PUT /api/relationships/:id
- * Update a relationship
+ * 用語間の関係を更新します。
+ * @route PUT /api/relationships/:id
+ * @param {string} id - 関係ID
+ * @param {object} body - 更新データ
+ * @param {string} body.relationshipType - 関係タイプ（オプション、synonym/antonym/related/parent/child）
+ * @returns {object} 200 - 更新された関係オブジェクト
+ * @returns {object} 400 - 無効な関係タイプまたは循環依存
+ * @returns {object} 404 - 関係が見つからない場合
+ * @returns {object} 500 - サーバーエラー
  */
 relationshipsRouter.put('/:id', async (c) => {
   try {
@@ -102,8 +128,12 @@ relationshipsRouter.put('/:id', async (c) => {
 });
 
 /**
- * DELETE /api/relationships/:id
- * Delete a relationship
+ * 用語間の関係を削除します。
+ * @route DELETE /api/relationships/:id
+ * @param {string} id - 関係ID
+ * @returns {object} 200 - 削除成功メッセージ
+ * @returns {object} 404 - 関係が見つからない場合
+ * @returns {object} 500 - サーバーエラー
  */
 relationshipsRouter.delete('/:id', async (c) => {
   try {
@@ -121,8 +151,13 @@ relationshipsRouter.delete('/:id', async (c) => {
 });
 
 /**
- * GET /api/terms/:id/relationships
- * Get all relationships for a specific term
+ * 特定の用語に関連するすべての関係を取得します。
+ * @route GET /api/terms/:termId/relationships
+ * @param {string} termId - 用語ID
+ * @query {boolean} includeDetails - 詳細情報を含めるか（true の場合含める、オプション）
+ * @returns {object} 200 - 関係の配列、またはdetailsを含むオブジェクト
+ * @returns {object} 404 - 用語が見つからない場合
+ * @returns {object} 500 - サーバーエラー
  */
 relationshipsRouter.get('/terms/:termId', async (c) => {
   try {
@@ -147,8 +182,13 @@ relationshipsRouter.get('/terms/:termId', async (c) => {
 });
 
 /**
- * GET /api/terms/:id/relationships/:type
- * Get related terms by relationship type
+ * 特定の関係タイプで関連する用語を取得します。
+ * @route GET /api/terms/:termId/type/:type
+ * @param {string} termId - 用語ID
+ * @param {string} type - 関係タイプ（synonym/antonym/related/parent/child）
+ * @returns {object[]} 200 - 関連用語の配列
+ * @returns {object} 400 - 無効な関係タイプ
+ * @returns {object} 500 - サーバーエラー
  */
 relationshipsRouter.get('/terms/:termId/type/:type', async (c) => {
   try {
@@ -174,8 +214,13 @@ relationshipsRouter.get('/terms/:termId/type/:type', async (c) => {
 });
 
 /**
- * DELETE /api/relationships/between/:sourceId/:targetId
- * Delete relationship between two specific terms
+ * 2つの特定の用語間の関係を削除します。
+ * @route DELETE /api/relationships/between/:sourceId/:targetId
+ * @param {string} sourceId - ソース用語ID
+ * @param {string} targetId - ターゲット用語ID
+ * @returns {object} 200 - 削除成功メッセージ
+ * @returns {object} 404 - 関係が見つからない場合
+ * @returns {object} 500 - サーバーエラー
  */
 relationshipsRouter.delete('/between/:sourceId/:targetId', async (c) => {
   try {
@@ -195,8 +240,11 @@ relationshipsRouter.delete('/between/:sourceId/:targetId', async (c) => {
 });
 
 /**
- * GET /api/contexts/:contextId/diagram
- * Get diagram data for visualizing term relationships in a context
+ * コンテキスト内の用語関係を可視化するための図表データを取得します。
+ * @route GET /api/contexts/:contextId/diagram
+ * @param {string} contextId - コンテキストID
+ * @returns {object} 200 - 図表データ（ノードとエッジを含むオブジェクト）
+ * @returns {object} 500 - サーバーエラー
  */
 relationshipsRouter.get('/contexts/:contextId/diagram', async (c) => {
   try {
@@ -210,8 +258,11 @@ relationshipsRouter.get('/contexts/:contextId/diagram', async (c) => {
 });
 
 /**
- * GET /api/relationships/hierarchy
- * Get term hierarchy (parent-child relationships)
+ * 用語の階層構造（親子関係）を取得します。
+ * @route GET /api/relationships/hierarchy
+ * @query {string} rootTermId - ルート用語ID（オプション）
+ * @returns {object} 200 - 階層構造を表すオブジェクト
+ * @returns {object} 500 - サーバーエラー
  */
 relationshipsRouter.get('/hierarchy', async (c) => {
   try {

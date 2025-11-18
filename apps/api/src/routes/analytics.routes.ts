@@ -1,3 +1,8 @@
+/**
+ * @file 分析とメトリクスルート
+ * @description システム全体のメトリクス、ユーザーアクティビティ、カバレッジ統計などの分析データを提供するエンドポイントを定義します。
+ */
+
 import { Hono } from 'hono';
 import { analyticsService } from '../services/analytics.service';
 import type { ExportFormat } from '../services/analytics.service';
@@ -5,8 +10,10 @@ import type { ExportFormat } from '../services/analytics.service';
 export const analyticsRouter = new Hono();
 
 /**
- * GET /api/analytics/metrics
- * Get all system metrics
+ * すべてのシステムメトリクスを取得します。
+ * @route GET /api/analytics/metrics
+ * @returns {object} 200 - メトリクスデータを含むオブジェクト
+ * @returns {object} 500 - サーバーエラー
  */
 analyticsRouter.get('/metrics', async (c) => {
   try {
@@ -19,8 +26,10 @@ analyticsRouter.get('/metrics', async (c) => {
 });
 
 /**
- * GET /api/analytics/metrics/system
- * Get system metrics only
+ * システムメトリクスのみを取得します。
+ * @route GET /api/analytics/metrics/system
+ * @returns {object} 200 - システムメトリクスデータ
+ * @returns {object} 500 - サーバーエラー
  */
 analyticsRouter.get('/metrics/system', async (c) => {
   try {
@@ -33,8 +42,10 @@ analyticsRouter.get('/metrics/system', async (c) => {
 });
 
 /**
- * GET /api/analytics/metrics/user-activity
- * Get user activity metrics
+ * ユーザーアクティビティメトリクスを取得します。
+ * @route GET /api/analytics/metrics/user-activity
+ * @returns {object} 200 - ユーザーアクティビティメトリクスデータ
+ * @returns {object} 500 - サーバーエラー
  */
 analyticsRouter.get('/metrics/user-activity', async (c) => {
   try {
@@ -47,8 +58,10 @@ analyticsRouter.get('/metrics/user-activity', async (c) => {
 });
 
 /**
- * GET /api/analytics/metrics/coverage
- * Get coverage metrics
+ * カバレッジメトリクスを取得します。
+ * @route GET /api/analytics/metrics/coverage
+ * @returns {object} 200 - カバレッジメトリクスデータ
+ * @returns {object} 500 - サーバーエラー
  */
 analyticsRouter.get('/metrics/coverage', async (c) => {
   try {
@@ -61,8 +74,12 @@ analyticsRouter.get('/metrics/coverage', async (c) => {
 });
 
 /**
- * GET /api/analytics/export
- * Export metrics in specified format (json or csv)
+ * メトリクスを指定した形式でエクスポートします。
+ * @route GET /api/analytics/export
+ * @query {string} format - エクスポート形式（json または csv、デフォルト: json）
+ * @returns {string} 200 - エクスポートされたメトリクスデータ
+ * @returns {object} 400 - 無効な形式が指定された場合
+ * @returns {object} 500 - サーバーエラー
  */
 analyticsRouter.get('/export', async (c) => {
   try {
@@ -93,8 +110,12 @@ analyticsRouter.get('/export', async (c) => {
 });
 
 /**
- * GET /api/analytics/top-proposers
- * Get most active proposers
+ * 最もアクティブな提案者ランキングを取得します。
+ * @route GET /api/analytics/top-proposers
+ * @query {number} limit - 取得する件数（デフォルト: 10）
+ * @returns {object[]} 200 - 提案者ランキング配列
+ * @returns {object} 400 - 無効なlimitパラメータ
+ * @returns {object} 500 - サーバーエラー
  */
 analyticsRouter.get('/top-proposers', async (c) => {
   try {
@@ -114,8 +135,12 @@ analyticsRouter.get('/top-proposers', async (c) => {
 });
 
 /**
- * GET /api/analytics/top-reviewers
- * Get most active reviewers
+ * 最もアクティブなレビュアーランキングを取得します。
+ * @route GET /api/analytics/top-reviewers
+ * @query {number} limit - 取得する件数（デフォルト: 10）
+ * @returns {object[]} 200 - レビュアーランキング配列
+ * @returns {object} 400 - 無効なlimitパラメータ
+ * @returns {object} 500 - サーバーエラー
  */
 analyticsRouter.get('/top-reviewers', async (c) => {
   try {

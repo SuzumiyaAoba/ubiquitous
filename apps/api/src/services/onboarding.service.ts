@@ -21,14 +21,14 @@ export interface LearningPath {
 
 export class OnboardingService {
   /**
-   * Get all essential terms
+   * 必須タームをすべて取得
    */
   async getEssentialTerms() {
     return await termRepository.findEssentialTerms();
   }
 
   /**
-   * Mark a term as essential
+   * タームを必須としてマーク
    */
   async markTermAsEssential(termId: string) {
     const term = await termRepository.findById(termId);
@@ -40,7 +40,7 @@ export class OnboardingService {
   }
 
   /**
-   * Unmark a term as essential
+   * タームを必須としてアンマーク
    */
   async unmarkTermAsEssential(termId: string) {
     const term = await termRepository.findById(termId);
@@ -52,10 +52,10 @@ export class OnboardingService {
   }
 
   /**
-   * Mark a term as learned for a user
+   * ユーザーがタームを学習したとしてマーク
    */
   async markTermAsLearned(data: MarkLearnedDto) {
-    // Validate term exists
+    // ターム存在することを検証
     const term = await termRepository.findById(data.termId);
     if (!term) {
       throw new Error(`Term with ID "${data.termId}" not found`);
@@ -65,29 +65,29 @@ export class OnboardingService {
   }
 
   /**
-   * Unmark a term as learned for a user
+   * ユーザーがタームを学習したとしてアンマーク
    */
   async unmarkTermAsLearned(userId: string, termId: string) {
     return await userLearningRepository.unmarkAsLearned(userId, termId);
   }
 
   /**
-   * Get learning progress for a user
+   * ユーザーの学習進度を取得
    */
   async getLearningProgress(userId: string): Promise<LearningProgress> {
-    // Get essential terms
+    // 必須タームを取得
     const essentialTermIds = await termRepository.getEssentialTermIds();
     const essentialTerms = await termRepository.findEssentialTerms();
 
-    // Get learned terms
+    // 学習したタームを取得
     const learnedTermIds = await userLearningRepository.getLearnedTermIds(userId);
 
-    // Calculate learned essential terms
+    // 学習した必須タームを計算
     const learnedEssentialIds = learnedTermIds.filter((id) =>
       essentialTermIds.includes(id)
     );
 
-    // Calculate remaining terms
+    // 残りのタームを計算
     const remainingTermIds = essentialTermIds.filter(
       (id) => !learnedEssentialIds.includes(id)
     );
@@ -106,39 +106,39 @@ export class OnboardingService {
   }
 
   /**
-   * Get recommended learning order based on dependencies
+   * 依存関係に基づいて推奨される学習順序を取得
    */
   async getRecommendedLearningPath(userId: string): Promise<LearningPath[]> {
-    // Get essential terms
+    // 必須タームを取得
     const essentialTerms = await termRepository.findEssentialTerms();
     const essentialTermIds = essentialTerms.map((t) => t.id);
 
-    // Get learned terms
+    // 学習したタームを取得
     const learnedTermIds = await userLearningRepository.getLearnedTermIds(userId);
 
-    // Build dependency graph from relationships
+    // 関係から依存関係グラフを構築
     const dependencyMap = new Map<string, string[]>();
 
     for (const term of essentialTerms) {
       const relationships = await termRelationshipRepository.findOutgoingByTermId(term.id);
 
-      // Parent relationships indicate dependencies (must learn parent first)
+      // 親の関係は依存関係を示しています（最初に親を学習する必要があります）
       const dependencies = relationships
         .filter((rel: any) => rel.relationshipType === 'parent')
         .map((rel: any) => rel.targetTermId)
-        .filter((id: string) => essentialTermIds.includes(id)); // Only essential terms
+        .filter((id: string) => essentialTermIds.includes(id)); // 必須タームのみ
 
       dependencyMap.set(term.id, dependencies);
     }
 
-    // Topological sort to determine learning order
+    // 学習順序を決定するためのトポロジカルソート
     const learningPath: LearningPath[] = [];
     const visited = new Set<string>();
     const tempMark = new Set<string>();
 
     const visit = (termId: string, depth: number = 0) => {
       if (tempMark.has(termId)) {
-        // Circular dependency detected, continue anyway
+        // 循環依存が検出されました、とにかく続行
         return;
       }
 
@@ -150,7 +150,7 @@ export class OnboardingService {
 
       const dependencies = dependencyMap.get(termId) || [];
 
-      // Visit dependencies first
+      // 最初に依存関係を訪問
       for (const depId of dependencies) {
         visit(depId, depth + 1);
       }
@@ -170,7 +170,7 @@ export class OnboardingService {
       }
     };
 
-    // Visit all essential terms
+    // すべての必須タームを訪問
     for (const term of essentialTerms) {
       visit(term.id);
     }
@@ -179,16 +179,16 @@ export class OnboardingService {
   }
 
   /**
-   * Get next recommended terms to learn
+   * 次に学習するべき推奨タームを取得
    */
   async getNextRecommendedTerms(userId: string, limit: number = 5) {
     const learningPath = await this.getRecommendedLearningPath(userId);
 
-    // Filter to unlearned terms where all dependencies are learned
+    // すべての依存関係が学習されているいわれていないタームにフィルター
     const recommendations = learningPath
       .filter((item) => !item.isLearned)
       .filter((item) => {
-        // Check if all dependencies are learned
+        // すべての依存関係が学習されているかをチェック
         return item.dependencies.every((depId) => {
           const dep = learningPath.find((p) => p.termId === depId);
           return dep?.isLearned || false;
@@ -196,7 +196,7 @@ export class OnboardingService {
       })
       .slice(0, limit);
 
-    // Enrich with full term details
+    // 完全なターム詳細で充実
     const enriched = await Promise.all(
       recommendations.map(async (rec) => {
         const term = await termRepository.findById(rec.termId);
@@ -211,7 +211,7 @@ export class OnboardingService {
   }
 
   /**
-   * Check if a user can learn a term (all dependencies met)
+   * ユーザーがタームを学習できるかをチェック（すべての依存関係が満たされている）
    */
   async canLearnTerm(userId: string, termId: string): Promise<boolean> {
     const term = await termRepository.findById(termId);
@@ -219,18 +219,18 @@ export class OnboardingService {
       throw new Error(`Term with ID "${termId}" not found`);
     }
 
-    // Get term dependencies (parent relationships)
+    // ターム依存関係を取得（親の関係）
     const relationships = await termRelationshipRepository.findOutgoingByTermId(termId);
     const parentIds = relationships
       .filter((rel: any) => rel.relationshipType === 'parent')
       .map((rel: any) => rel.targetTermId);
 
     if (parentIds.length === 0) {
-      // No dependencies, can learn
+      // 依存関係なし、学習できます
       return true;
     }
 
-    // Check if all parents are learned
+    // すべての親が学習されているかをチェック
     const learnedTermIds = await userLearningRepository.getLearnedTermIds(userId);
     return parentIds.every((parentId: string) => learnedTermIds.includes(parentId));
   }

@@ -1,3 +1,8 @@
+/**
+ * @file 用語提案管理ルート
+ * @description 新しい用語の提案作成、管理、承認/却下処理のエンドポイントを定義します。
+ */
+
 import { Hono } from 'hono';
 import { discussionService } from '../services/discussion.service';
 import type { CreateTermProposalDto, UpdateTermProposalDto, ProposalStatus } from '../repositories/term-proposal.repository';
@@ -5,8 +10,18 @@ import type { CreateTermProposalDto, UpdateTermProposalDto, ProposalStatus } fro
 export const proposalsRouter = new Hono();
 
 /**
- * POST /api/proposals
- * Create a new term proposal
+ * 新しい用語提案を作成します。
+ * @route POST /api/proposals
+ * @param {object} body - 提案作成データ
+ * @param {string} body.name - 提案する用語の名前（必須）
+ * @param {string} body.definition - 用語の定義（必須）
+ * @param {string} body.boundedContextId - 対象の有界コンテキストID（必須）
+ * @param {string} body.proposedBy - 提案者ID（必須）
+ * @returns {object} 201 - 作成された提案オブジェクト
+ * @returns {object} 400 - 必須フィールドが不足している場合
+ * @returns {object} 404 - コンテキストが見つからない場合
+ * @returns {object} 409 - 同名の用語が既に存在する場合
+ * @returns {object} 500 - サーバーエラー
  */
 proposalsRouter.post('/', async (c) => {
   try {
@@ -37,8 +52,12 @@ proposalsRouter.post('/', async (c) => {
 });
 
 /**
- * GET /api/proposals
- * Get all proposals, optionally filtered by status
+ * すべての用語提案を取得し、ステータスでフィルタリングできます。
+ * @route GET /api/proposals
+ * @query {string} status - 提案ステータス（pending/approved/rejected/on_hold、オプション）
+ * @returns {object[]} 200 - 提案の配列
+ * @returns {object} 400 - 無効なステータス値
+ * @returns {object} 500 - サーバーエラー
  */
 proposalsRouter.get('/', async (c) => {
   try {
@@ -64,8 +83,12 @@ proposalsRouter.get('/', async (c) => {
 });
 
 /**
- * GET /api/proposals/:id
- * Get a specific proposal by ID
+ * IDで指定された用語提案を取得します。
+ * @route GET /api/proposals/:id
+ * @param {string} id - 提案ID
+ * @returns {object} 200 - 提案オブジェクト
+ * @returns {object} 404 - 提案が見つからない場合
+ * @returns {object} 500 - サーバーエラー
  */
 proposalsRouter.get('/:id', async (c) => {
   try {
@@ -83,8 +106,14 @@ proposalsRouter.get('/:id', async (c) => {
 });
 
 /**
- * PUT /api/proposals/:id
- * Update a proposal
+ * 用語提案を更新します。
+ * @route PUT /api/proposals/:id
+ * @param {string} id - 提案ID
+ * @param {object} body - 更新データ（UpdateTermProposalDto）
+ * @returns {object} 200 - 更新された提案オブジェクト
+ * @returns {object} 400 - ステータス更新不可の提案を更新しようとした場合
+ * @returns {object} 404 - 提案が見つからない場合
+ * @returns {object} 500 - サーバーエラー
  */
 proposalsRouter.put('/:id', async (c) => {
   try {
@@ -108,8 +137,15 @@ proposalsRouter.put('/:id', async (c) => {
 });
 
 /**
- * POST /api/proposals/:id/approve
- * Approve a proposal and create the term
+ * 用語提案を承認し、用語を作成します。
+ * @route POST /api/proposals/:id/approve
+ * @param {string} id - 提案ID
+ * @param {object} body - リクエストボディ
+ * @param {string} body.approvedBy - 承認者ID（必須）
+ * @returns {object} 200 - 承認結果オブジェクト
+ * @returns {object} 400 - 必須フィールドが不足している、または既に承認/却下済み
+ * @returns {object} 404 - 提案が見つからない場合
+ * @returns {object} 500 - サーバーエラー
  */
 proposalsRouter.post('/:id/approve', async (c) => {
   try {
@@ -137,8 +173,15 @@ proposalsRouter.post('/:id/approve', async (c) => {
 });
 
 /**
- * POST /api/proposals/:id/reject
- * Reject a proposal
+ * 用語提案を却下します。
+ * @route POST /api/proposals/:id/reject
+ * @param {string} id - 提案ID
+ * @param {object} body - リクエストボディ
+ * @param {string} body.rejectionReason - 却下理由（必須）
+ * @returns {object} 200 - 却下後の提案オブジェクト
+ * @returns {object} 400 - 必須フィールドが不足している、または既に承認/却下済み
+ * @returns {object} 404 - 提案が見つからない場合
+ * @returns {object} 500 - サーバーエラー
  */
 proposalsRouter.post('/:id/reject', async (c) => {
   try {
@@ -166,8 +209,13 @@ proposalsRouter.post('/:id/reject', async (c) => {
 });
 
 /**
- * POST /api/proposals/:id/hold
- * Put a proposal on hold
+ * 用語提案を保留状態にします。
+ * @route POST /api/proposals/:id/hold
+ * @param {string} id - 提案ID
+ * @returns {object} 200 - 保留状態に変更された提案オブジェクト
+ * @returns {object} 400 - 保留状態に変更できない提案（既に承認/却下済み）
+ * @returns {object} 404 - 提案が見つからない場合
+ * @returns {object} 500 - サーバーエラー
  */
 proposalsRouter.post('/:id/hold', async (c) => {
   try {
@@ -189,8 +237,12 @@ proposalsRouter.post('/:id/hold', async (c) => {
 });
 
 /**
- * DELETE /api/proposals/:id
- * Delete a proposal
+ * 用語提案を削除します。
+ * @route DELETE /api/proposals/:id
+ * @param {string} id - 提案ID
+ * @returns {object} 200 - 削除成功メッセージ
+ * @returns {object} 404 - 提案が見つからない場合
+ * @returns {object} 500 - サーバーエラー
  */
 proposalsRouter.delete('/:id', async (c) => {
   try {

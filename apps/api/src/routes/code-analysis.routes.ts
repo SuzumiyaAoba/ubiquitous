@@ -1,11 +1,23 @@
+/**
+ * @file コード分析ルート
+ * @description コードのアップロード、分析、レポート生成などのエンドポイントを定義します。
+ */
+
 import { Hono } from 'hono';
 import { codeAnalysisService } from '../services/code-analysis.service';
 
 export const codeAnalysisRouter = new Hono();
 
 /**
- * POST /api/code-analysis/upload
- * Upload and analyze code
+ * コードをアップロードして分析を実行します。
+ * @route POST /api/code-analysis/upload
+ * @param {object} body - リクエストボディ
+ * @param {string} body.fileName - ファイル名（必須）
+ * @param {string} body.code - コード内容（必須）
+ * @param {string} body.uploadedBy - アップロードユーザーID（必須）
+ * @returns {object} 201 - 分析IDを含むオブジェクト
+ * @returns {object} 400 - 必須フィールドが不足している場合
+ * @returns {object} 500 - サーバーエラー
  */
 codeAnalysisRouter.post('/upload', async (c) => {
   try {
@@ -35,8 +47,12 @@ codeAnalysisRouter.post('/upload', async (c) => {
 });
 
 /**
- * GET /api/code-analysis/:id/report
- * Get analysis report
+ * 分析レポートを取得します。
+ * @route GET /api/code-analysis/:id/report
+ * @param {string} id - 分析ID
+ * @returns {object} 200 - 分析レポートオブジェクト
+ * @returns {object} 404 - 分析が見つからない場合
+ * @returns {object} 500 - サーバーエラー
  */
 codeAnalysisRouter.get('/:id/report', async (c) => {
   try {

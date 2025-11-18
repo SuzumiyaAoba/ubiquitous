@@ -27,10 +27,10 @@ export interface UpdateCommentDto {
 }
 
 export class DiscussionRepository {
-  // ===== Thread Operations =====
+  // ===== スレッド操作 =====
 
   /**
-   * Create a new discussion thread
+   * 新しいディスカッションスレッドを作成
    */
   async createThread(data: CreateDiscussionThreadDto) {
     const [thread] = await db
@@ -48,7 +48,7 @@ export class DiscussionRepository {
   }
 
   /**
-   * Find a thread by ID
+   * IDでスレッドを検索
    */
   async findThreadById(id: string) {
     const [thread] = await db
@@ -60,7 +60,7 @@ export class DiscussionRepository {
   }
 
   /**
-   * Find all threads
+   * すべてのスレッドを取得
    */
   async findAllThreads() {
     return await db
@@ -70,7 +70,7 @@ export class DiscussionRepository {
   }
 
   /**
-   * Find threads by term
+   * 用語でスレッドを検索
    */
   async findThreadsByTermId(termId: string) {
     return await db
@@ -81,7 +81,7 @@ export class DiscussionRepository {
   }
 
   /**
-   * Find threads by proposal
+   * 提案でスレッドを検索
    */
   async findThreadsByProposalId(proposalId: string) {
     return await db
@@ -92,7 +92,7 @@ export class DiscussionRepository {
   }
 
   /**
-   * Find threads by status
+   * ステータスでスレッドを検索
    */
   async findThreadsByStatus(status: ThreadStatus) {
     return await db
@@ -103,7 +103,7 @@ export class DiscussionRepository {
   }
 
   /**
-   * Find threads by creator
+   * 作成者でスレッドを検索
    */
   async findThreadsByCreator(createdBy: string) {
     return await db
@@ -114,7 +114,7 @@ export class DiscussionRepository {
   }
 
   /**
-   * Update a thread
+   * スレッドを更新
    */
   async updateThread(id: string, data: UpdateDiscussionThreadDto) {
     const [updated] = await db
@@ -127,21 +127,21 @@ export class DiscussionRepository {
   }
 
   /**
-   * Close a thread
+   * スレッドをクローズ
    */
   async closeThread(id: string) {
     return await this.updateThread(id, { status: 'closed' });
   }
 
   /**
-   * Reopen a thread
+   * スレッドを再度開く
    */
   async reopenThread(id: string) {
     return await this.updateThread(id, { status: 'open' });
   }
 
   /**
-   * Delete a thread
+   * スレッドを削除
    */
   async deleteThread(id: string) {
     const [deleted] = await db
@@ -152,10 +152,10 @@ export class DiscussionRepository {
     return deleted || null;
   }
 
-  // ===== Comment Operations =====
+  // ===== コメント操作 =====
 
   /**
-   * Create a new comment
+   * 新しいコメントを作成
    */
   async createComment(data: CreateCommentDto) {
     const [comment] = await db
@@ -171,7 +171,7 @@ export class DiscussionRepository {
   }
 
   /**
-   * Find a comment by ID
+   * IDでコメントを検索
    */
   async findCommentById(id: string) {
     const [comment] = await db
@@ -183,7 +183,7 @@ export class DiscussionRepository {
   }
 
   /**
-   * Find all comments for a thread
+   * スレッドのすべてのコメントを取得
    */
   async findCommentsByThreadId(threadId: string) {
     return await db
@@ -194,7 +194,7 @@ export class DiscussionRepository {
   }
 
   /**
-   * Find comments by user
+   * ユーザーでコメントを検索
    */
   async findCommentsByUser(postedBy: string) {
     return await db
@@ -205,7 +205,7 @@ export class DiscussionRepository {
   }
 
   /**
-   * Update a comment
+   * コメントを更新
    */
   async updateComment(id: string, data: UpdateCommentDto) {
     const [updated] = await db
@@ -221,7 +221,7 @@ export class DiscussionRepository {
   }
 
   /**
-   * Delete a comment
+   * コメントを削除
    */
   async deleteComment(id: string) {
     const [deleted] = await db
@@ -233,7 +233,7 @@ export class DiscussionRepository {
   }
 
   /**
-   * Get thread with all comments
+   * すべてのコメント付きスレッドを取得
    */
   async getThreadWithComments(threadId: string) {
     const thread = await this.findThreadById(threadId);
@@ -248,7 +248,7 @@ export class DiscussionRepository {
   }
 
   /**
-   * Count comments in a thread
+   * スレッド内のコメント数をカウント
    */
   async countCommentsInThread(threadId: string): Promise<number> {
     const threadComments = await this.findCommentsByThreadId(threadId);

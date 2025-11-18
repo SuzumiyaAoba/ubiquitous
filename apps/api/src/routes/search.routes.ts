@@ -1,11 +1,24 @@
+/**
+ * @file 検索ルート
+ * @description MeiliSearchを使用した用語検索、オートコンプリート、インデックス管理のエンドポイントを定義します。
+ */
+
 import { Hono } from 'hono';
 import { searchService } from '../services/search.service';
 
 export const searchRouter = new Hono();
 
 /**
- * GET /api/search
- * Search for terms
+ * 用語を検索します。
+ * @route GET /api/search
+ * @query {string} q - 検索クエリ（必須）
+ * @query {number} limit - 返す結果の最大数（デフォルト: 20）
+ * @query {number} offset - スキップする結果数（デフォルト: 0）
+ * @query {string} contextId - コンテキストID でフィルタ（オプション）
+ * @query {string} status - ステータスでフィルタ（オプション）
+ * @returns {object} 200 - 検索結果オブジェクト
+ * @returns {object} 400 - 検索クエリが指定されていない場合
+ * @returns {object} 500 - サーバーエラー
  */
 searchRouter.get('/', async (c) => {
   try {
@@ -34,8 +47,13 @@ searchRouter.get('/', async (c) => {
 });
 
 /**
- * GET /api/search/suggestions
- * Get autocomplete suggestions
+ * オートコンプリート用のサジェストを取得します。
+ * @route GET /api/search/suggestions
+ * @query {string} q - 検索クエリ（必須）
+ * @query {number} limit - サジェスト候補の最大数（デフォルト: 5）
+ * @returns {object[]} 200 - サジェスト候補の配列
+ * @returns {object} 400 - 検索クエリが指定されていない場合
+ * @returns {object} 500 - サーバーエラー
  */
 searchRouter.get('/suggestions', async (c) => {
   try {
@@ -55,8 +73,10 @@ searchRouter.get('/suggestions', async (c) => {
 });
 
 /**
- * POST /api/search/index/rebuild
- * Rebuild the entire search index
+ * 検索インデックス全体を再構築します。
+ * @route POST /api/search/index/rebuild
+ * @returns {object} 200 - インデックス再構築結果（インデックスされた用語数）
+ * @returns {object} 500 - サーバーエラー
  */
 searchRouter.post('/index/rebuild', async (c) => {
   try {
@@ -72,8 +92,10 @@ searchRouter.post('/index/rebuild', async (c) => {
 });
 
 /**
- * GET /api/search/index/stats
- * Get search index statistics
+ * 検索インデックスの統計情報を取得します。
+ * @route GET /api/search/index/stats
+ * @returns {object} 200 - インデックス統計情報
+ * @returns {object} 500 - サーバーエラー
  */
 searchRouter.get('/index/stats', async (c) => {
   try {
@@ -86,8 +108,11 @@ searchRouter.get('/index/stats', async (c) => {
 });
 
 /**
- * POST /api/search/index/term/:id
- * Index a specific term
+ * 特定の用語をインデックスに登録します。
+ * @route POST /api/search/index/term/:id
+ * @param {string} id - 用語ID
+ * @returns {object} 200 - インデックス登録成功メッセージ
+ * @returns {object} 500 - サーバーエラー
  */
 searchRouter.post('/index/term/:id', async (c) => {
   try {
@@ -101,8 +126,10 @@ searchRouter.post('/index/term/:id', async (c) => {
 });
 
 /**
- * GET /api/search/health
- * Check MeiliSearch connection
+ * MeiliSearch の接続状態をチェックします。
+ * @route GET /api/search/health
+ * @returns {object} 200 - 接続状態が良好な場合
+ * @returns {object} 503 - MeiliSearch に接続できない場合
  */
 searchRouter.get('/health', async (c) => {
   try {

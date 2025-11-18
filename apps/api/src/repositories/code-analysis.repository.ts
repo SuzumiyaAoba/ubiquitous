@@ -11,7 +11,7 @@ export interface CreateCodeAnalysisDto {
 
 export class CodeAnalysisRepository {
   /**
-   * Create a new code analysis record
+   * 新しいコード分析レコードを作成
    */
   async create(data: CreateCodeAnalysisDto) {
     const [analysis] = await db
@@ -28,7 +28,7 @@ export class CodeAnalysisRepository {
   }
 
   /**
-   * Find an analysis by ID
+   * IDで分析を検索
    */
   async findById(id: string) {
     const [analysis] = await db
@@ -40,7 +40,7 @@ export class CodeAnalysisRepository {
   }
 
   /**
-   * Find all analyses
+   * すべての分析を取得
    */
   async findAll() {
     return await db
@@ -50,7 +50,7 @@ export class CodeAnalysisRepository {
   }
 
   /**
-   * Find analyses by uploader
+   * アップロード者で分析を検索
    */
   async findByUploader(uploadedBy: string) {
     return await db
@@ -61,7 +61,7 @@ export class CodeAnalysisRepository {
   }
 
   /**
-   * Delete an analysis
+   * 分析を削除
    */
   async delete(id: string) {
     const [deleted] = await db

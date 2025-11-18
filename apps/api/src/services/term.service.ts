@@ -5,45 +5,45 @@ export class TermService {
   private searchService: any = null;
 
   /**
-   * Set search service (to avoid circular dependency)
+   * 検索サービスを設定（循環依存を回避するため）
    */
   setSearchService(service: any) {
     this.searchService = service;
   }
 
   /**
-   * Sync term to search index if search service is available
+   * 検索サービスが利用可能な場合、検索インデックスにタームを同期
    */
   private async syncToSearchIndex(termId: string) {
     if (this.searchService) {
       try {
         await this.searchService.indexTerm(termId);
       } catch (error) {
-        console.error('Failed to sync term to search index:', error);
-        // Don't throw - search sync is not critical
+        console.error('検索インデックスにタームを同期できませんでした：', error);
+        // スローしない - 検索同期は重要ではありません
       }
     }
   }
 
   /**
-   * Remove term from search index if search service is available
+   * 検索サービスが利用可能な場合、検索インデックスからタームを削除
    */
   private async removeFromSearchIndex(termId: string) {
     if (this.searchService) {
       try {
         await this.searchService.removeTermFromIndex(termId);
       } catch (error) {
-        console.error('Failed to remove term from search index:', error);
-        // Don't throw - search sync is not critical
+        console.error('検索インデックスからタームを削除できませんでした：', error);
+        // スローしない - 検索同期は重要ではありません
       }
     }
   }
 
   /**
-   * Create a new term
+   * 新しいタームを作成
    */
   async createTerm(data: CreateTermDto, createdBy: string = 'system') {
-    // Check if term with same name already exists
+    // 同じ名前のターム既に存在するかを確認
     const exists = await termRepository.existsByName(data.name);
     if (exists) {
       throw new Error(`Term with name "${data.name}" already exists`);
@@ -51,14 +51,14 @@ export class TermService {
 
     const term = await termRepository.create(data);
 
-    // Sync to search index
+    // 検索インデックスに同期
     await this.syncToSearchIndex(term.id);
 
     return term;
   }
 
   /**
-   * Get a term by ID
+   * IDでタームを取得
    */
   async getTermById(id: string) {
     const term = await termRepository.findById(id);
@@ -69,7 +69,7 @@ export class TermService {
   }
 
   /**
-   * Get a term with all its contexts
+   * 関連するすべてのコンテキスト付きのタームを取得
    */
   async getTermWithContexts(id: string) {
     const term = await termRepository.getWithContexts(id);
@@ -80,35 +80,35 @@ export class TermService {
   }
 
   /**
-   * Get all terms
+   * すべてのタームを取得
    */
   async getAllTerms() {
     return await termRepository.findAll();
   }
 
   /**
-   * Get terms by context ID
+   * コンテキストIDでタームを取得
    */
   async getTermsByContext(contextId: string) {
     return await termRepository.findByContextId(contextId);
   }
 
   /**
-   * Search terms by name
+   * 名前でターム検索
    */
   async searchTerms(query: string) {
     return await termRepository.searchByName(query);
   }
 
   /**
-   * Update a term
-   * Creates a history record if the term was changed
+   * タームを更新
+   * タームが変更された場合は履歴レコードを作成
    */
   async updateTerm(id: string, data: UpdateTermDto, changedBy: string = 'system', changeReason?: string) {
-    // Get current term
+    // 現在のタームを取得
     const currentTerm = await this.getTermById(id);
 
-    // Check if name is being changed and if new name already exists
+    // 名前が変更されており、新しい名前が既に存在するかをチェック
     if (data.name && data.name !== currentTerm.name) {
       const exists = await termRepository.existsByName(data.name);
       if (exists) {
@@ -116,16 +116,16 @@ export class TermService {
       }
     }
 
-    // Calculate changed fields
+    // 変更されたフィールドを計算
     const changedFields: string[] = [];
     if (data.name && data.name !== currentTerm.name) changedFields.push('name');
     if (data.description && data.description !== currentTerm.description) changedFields.push('description');
     if (data.status && data.status !== currentTerm.status) changedFields.push('status');
 
-    // Update the term
+    // タームを更新
     const updated = await termRepository.update(id, data);
 
-    // Create history record if there were changes
+    // 変更があった場合は履歴レコードを作成
     if (changedFields.length > 0) {
       const latestVersion = await termHistoryRepository.getLatestVersion(id);
       await termHistoryRepository.create({
@@ -139,27 +139,27 @@ export class TermService {
       });
     }
 
-    // Sync to search index
+    // 検索インデックスに同期
     await this.syncToSearchIndex(id);
 
     return updated;
   }
 
   /**
-   * Delete a term (soft delete by default)
+   * タームを削除（デフォルトではソフト削除）
    */
   async deleteTerm(id: string, permanent: boolean = false) {
-    // Check if term exists
+    // ターム存在することを確認
     await this.getTermById(id);
 
     let result;
     if (permanent) {
       result = await termRepository.delete(id);
-      // Remove from search index on permanent delete
+      // 完全削除時に検索インデックスから削除
       await this.removeFromSearchIndex(id);
     } else {
       result = await termRepository.softDelete(id);
-      // Update search index (deprecated status)
+      // 検索インデックスを更新（推奨されない ステータス）
       await this.syncToSearchIndex(id);
     }
 
@@ -167,22 +167,22 @@ export class TermService {
   }
 
   /**
-   * Add a term to a context with definition
+   * 定義を持つコンテキストにタームを追加
    */
   async addTermToContext(data: AddTermToContextDto, changedBy: string = 'system') {
-    // Check if term exists
+    // ターム存在することを確認
     await this.getTermById(data.termId);
 
-    // Check if already in context
+    // 既にコンテキストに含まれているかをチェック
     const existsInContext = await termRepository.existsInContext(data.termId, data.contextId);
     if (existsInContext) {
       throw new Error('Term already exists in this context');
     }
 
-    // Add to context
+    // コンテキストに追加
     const termContext = await termRepository.addToContext(data);
 
-    // Create history record
+    // 履歴レコードを作成
     const latestVersion = await termHistoryRepository.getLatestVersion(data.termId);
     await termHistoryRepository.create({
       termId: data.termId,
@@ -194,14 +194,14 @@ export class TermService {
       changeReason: `Added to context ${data.contextId}`,
     });
 
-    // Sync to search index
+    // 検索インデックスに同期
     await this.syncToSearchIndex(data.termId);
 
     return termContext;
   }
 
   /**
-   * Update term definition in a specific context
+   * 特定のコンテキストでターム定義を更新
    */
   async updateTermInContext(
     termId: string,
@@ -210,21 +210,21 @@ export class TermService {
     examples?: string,
     changedBy: string = 'system'
   ) {
-    // Check if term exists in context
+    // ターム存在するかをチェック
     const existsInContext = await termRepository.existsInContext(termId, contextId);
     if (!existsInContext) {
       throw new Error('Term not found in this context');
     }
 
-    // Get current definition
+    // 現在の定義を取得
     const term = await termRepository.getWithContexts(termId);
     const currentContext = term?.contexts.find(c => c.contextId === contextId);
     const previousDefinition = currentContext?.definition || '';
 
-    // Update definition
+    // 定義を更新
     const updated = await termRepository.updateInContext(termId, contextId, definition, examples);
 
-    // Create history record
+    // 履歴レコードを作成
     const latestVersion = await termHistoryRepository.getLatestVersion(termId);
     await termHistoryRepository.create({
       termId,
@@ -243,10 +243,10 @@ export class TermService {
   }
 
   /**
-   * Remove a term from a context
+   * コンテキストからターム削除
    */
   async removeTermFromContext(termId: string, contextId: string) {
-    // Check if term exists in context
+    // ターム存在するかをチェック
     const existsInContext = await termRepository.existsInContext(termId, contextId);
     if (!existsInContext) {
       throw new Error('Term not found in this context');
@@ -254,17 +254,17 @@ export class TermService {
 
     const result = await termRepository.removeFromContext(termId, contextId);
 
-    // Sync to search index
+    // 検索インデックスに同期
     await this.syncToSearchIndex(termId);
 
     return result;
   }
 
   /**
-   * Get term history
+   * ターム履歴を取得
    */
   async getTermHistory(id: string) {
-    // Check if term exists
+    // ターム存在することを確認
     await this.getTermById(id);
 
     return await termHistoryRepository.findByTermId(id);
