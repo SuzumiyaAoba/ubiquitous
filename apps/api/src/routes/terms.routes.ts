@@ -4,9 +4,14 @@
  * コンテキストごとの用語定義管理のエンドポイントを定義します。
  */
 
-import { Hono } from 'hono';
-import { termService } from '../services/term.service';
-import type { CreateTermDto, UpdateTermDto, AddTermToContextDto } from '../repositories/term.repository';
+import { Hono } from "hono";
+import { termService } from "../services/term.service";
+import type {
+  CreateTermDto,
+  UpdateTermDto,
+  AddTermToContextDto,
+} from "../repositories/term.repository";
+import type { AppError } from "../errors/custom-errors";
 
 export const termsRouter = new Hono();
 
@@ -21,23 +26,24 @@ export const termsRouter = new Hono();
  * @returns {object} 409 - 同名の用語が既に存在する場合
  * @returns {object} 500 - サーバーエラー
  */
-termsRouter.post('/', async (c) => {
-  try {
-    const body = await c.req.json<CreateTermDto & { createdBy?: string }>();
+termsRouter.post("/", async (c) => {
+  const body = await c.req.json<CreateTermDto & { createdBy?: string }>();
 
-    // Validate required fields
-    if (!body.name) {
-      return c.json({ error: 'Name is required' }, 400);
-    }
-
-    const { createdBy, ...termData } = body;
-    const term = await termService.createTerm(termData, createdBy);
-    return c.json(term, 201);
-  } catch (error) {
-    console.error('Error creating term:', error);
-    const message = error instanceof Error ? error.message : 'Failed to create term';
-    return c.json({ error: message }, error instanceof Error && error.message.includes('already exists') ? 409 : 500);
+  // Validate required fields
+  if (!body.name) {
+    return c.json({ error: "Name is required" }, 400);
   }
+
+  const { createdBy, ...termData } = body;
+  const result = await termService.createTerm(termData, createdBy);
+
+  return result.match(
+    (term) => c.json(term, 201),
+    (error: AppError) => {
+      console.error("Error creating term:", error);
+      return c.json({ error: error.message }, error.statusCode as any);
+    }
+  );
 });
 
 /**
@@ -48,10 +54,10 @@ termsRouter.post('/', async (c) => {
  * @returns {object[]} 200 - 用語の配列
  * @returns {object} 500 - サーバーエラー
  */
-termsRouter.get('/', async (c) => {
+termsRouter.get("/", async (c) => {
   try {
-    const contextId = c.req.query('contextId');
-    const search = c.req.query('search');
+    const contextId = c.req.query("contextId");
+    const search = c.req.query("search");
 
     let terms;
     if (contextId) {
@@ -64,8 +70,8 @@ termsRouter.get('/', async (c) => {
 
     return c.json(terms);
   } catch (error) {
-    console.error('Error fetching terms:', error);
-    return c.json({ error: 'Failed to fetch terms' }, 500);
+    console.error("Error fetching terms:", error);
+    return c.json({ error: "Failed to fetch terms" }, 500);
   }
 });
 
@@ -78,21 +84,21 @@ termsRouter.get('/', async (c) => {
  * @returns {object} 404 - 用語が見つからない場合
  * @returns {object} 500 - サーバーエラー
  */
-termsRouter.get('/:id', async (c) => {
-  try {
-    const id = c.req.param('id');
-    const includeContexts = c.req.query('includeContexts') === 'true';
+termsRouter.get("/:id", async (c) => {
+  const id = c.req.param("id");
+  const includeContexts = c.req.query("includeContexts") === "true";
 
-    const term = includeContexts
-      ? await termService.getTermWithContexts(id)
-      : await termService.getTermById(id);
+  const result = includeContexts
+    ? await termService.getTermWithContexts(id)
+    : await termService.getTermById(id);
 
-    return c.json(term);
-  } catch (error) {
-    console.error('Error fetching term:', error);
-    const message = error instanceof Error ? error.message : 'Failed to fetch term';
-    return c.json({ error: message }, error instanceof Error && error.message.includes('not found') ? 404 : 500);
-  }
+  return result.match(
+    (term) => c.json(term),
+    (error: AppError) => {
+      console.error("Error fetching term:", error);
+      return c.json({ error: error.message }, error.statusCode as any);
+    }
+  );
 });
 
 /**
@@ -107,29 +113,20 @@ termsRouter.get('/:id', async (c) => {
  * @returns {object} 409 - 同名の用語が既に存在する場合
  * @returns {object} 500 - サーバーエラー
  */
-termsRouter.put('/:id', async (c) => {
-  try {
-    const id = c.req.param('id');
-    const body = await c.req.json<UpdateTermDto & { changedBy?: string; changeReason?: string }>();
+termsRouter.put("/:id", async (c) => {
+  const id = c.req.param("id");
+  const body = await c.req.json<UpdateTermDto & { changedBy?: string; changeReason?: string }>();
 
-    const { changedBy, changeReason, ...termData } = body;
-    const updated = await termService.updateTerm(id, termData, changedBy, changeReason);
+  const { changedBy, changeReason, ...termData } = body;
+  const result = await termService.updateTerm(id, termData, changedBy, changeReason);
 
-    return c.json(updated);
-  } catch (error) {
-    console.error('Error updating term:', error);
-    const message = error instanceof Error ? error.message : 'Failed to update term';
-
-    if (error instanceof Error) {
-      if (error.message.includes('not found')) {
-        return c.json({ error: message }, 404);
-      } else if (error.message.includes('already exists')) {
-        return c.json({ error: message }, 409);
-      }
+  return result.match(
+    (updated) => c.json(updated),
+    (error: AppError) => {
+      console.error("Error updating term:", error);
+      return c.json({ error: error.message }, error.statusCode as any);
     }
-
-    return c.json({ error: message }, 500);
-  }
+  );
 });
 
 /**
@@ -141,18 +138,19 @@ termsRouter.put('/:id', async (c) => {
  * @returns {object} 404 - 用語が見つからない場合
  * @returns {object} 500 - サーバーエラー
  */
-termsRouter.delete('/:id', async (c) => {
-  try {
-    const id = c.req.param('id');
-    const permanent = c.req.query('permanent') === 'true';
+termsRouter.delete("/:id", async (c) => {
+  const id = c.req.param("id");
+  const permanent = c.req.query("permanent") === "true";
 
-    await termService.deleteTerm(id, permanent);
-    return c.json({ message: 'Term deleted successfully' });
-  } catch (error) {
-    console.error('Error deleting term:', error);
-    const message = error instanceof Error ? error.message : 'Failed to delete term';
-    return c.json({ error: message }, error instanceof Error && error.message.includes('not found') ? 404 : 500);
-  }
+  const result = await termService.deleteTerm(id, permanent);
+
+  return result.match(
+    () => c.json({ message: "Term deleted successfully" }),
+    (error: AppError) => {
+      console.error("Error deleting term:", error);
+      return c.json({ error: error.message }, error.statusCode as any);
+    }
+  );
 });
 
 /**
@@ -163,16 +161,17 @@ termsRouter.delete('/:id', async (c) => {
  * @returns {object} 404 - 用語が見つからない場合
  * @returns {object} 500 - サーバーエラー
  */
-termsRouter.get('/:id/history', async (c) => {
-  try {
-    const id = c.req.param('id');
-    const history = await termService.getTermHistory(id);
-    return c.json(history);
-  } catch (error) {
-    console.error('Error fetching term history:', error);
-    const message = error instanceof Error ? error.message : 'Failed to fetch term history';
-    return c.json({ error: message }, error instanceof Error && error.message.includes('not found') ? 404 : 500);
-  }
+termsRouter.get("/:id/history", async (c) => {
+  const id = c.req.param("id");
+  const result = await termService.getTermHistory(id);
+
+  return result.match(
+    (history) => c.json(history),
+    (error: AppError) => {
+      console.error("Error fetching term history:", error);
+      return c.json({ error: error.message }, error.statusCode as any);
+    }
+  );
 });
 
 /**
@@ -189,31 +188,25 @@ termsRouter.get('/:id/history', async (c) => {
  * @returns {object} 409 - 用語が既にコンテキストに追加されている場合
  * @returns {object} 500 - サーバーエラー
  */
-termsRouter.post('/:id/contexts', async (c) => {
-  try {
-    const termId = c.req.param('id');
-    const body = await c.req.json<Omit<AddTermToContextDto, 'termId'> & { changedBy?: string }>();
+termsRouter.post("/:id/contexts", async (c) => {
+  const termId = c.req.param("id");
+  const body = await c.req.json<Omit<AddTermToContextDto, "termId"> & { changedBy?: string }>();
 
-    // Validate required fields
-    if (!body.contextId || !body.definition) {
-      return c.json({ error: 'Context ID and definition are required' }, 400);
-    }
-
-    const { changedBy, ...data } = body;
-    const termContext = await termService.addTermToContext(
-      { ...data, termId },
-      changedBy
-    );
-
-    return c.json(termContext, 201);
-  } catch (error) {
-    console.error('Error adding term to context:', error);
-    const message = error instanceof Error ? error.message : 'Failed to add term to context';
-    if (error instanceof Error && error.message.includes('already exists')) {
-      return c.json({ error: message }, 409);
-    }
-    return c.json({ error: message }, 500);
+  // Validate required fields
+  if (!body.contextId || !body.definition) {
+    return c.json({ error: "Context ID and definition are required" }, 400);
   }
+
+  const { changedBy, ...data } = body;
+  const result = await termService.addTermToContext({ ...data, termId }, changedBy);
+
+  return result.match(
+    (termContext) => c.json(termContext, 201),
+    (error: AppError) => {
+      console.error("Error adding term to context:", error);
+      return c.json({ error: error.message }, error.statusCode as any);
+    }
+  );
 });
 
 /**
@@ -230,30 +223,30 @@ termsRouter.post('/:id/contexts', async (c) => {
  * @returns {object} 404 - 用語またはコンテキストが見つからない場合
  * @returns {object} 500 - サーバーエラー
  */
-termsRouter.put('/:id/contexts/:contextId', async (c) => {
-  try {
-    const termId = c.req.param('id');
-    const contextId = c.req.param('contextId');
-    const body = await c.req.json<{ definition: string; examples?: string; changedBy?: string }>();
+termsRouter.put("/:id/contexts/:contextId", async (c) => {
+  const termId = c.req.param("id");
+  const contextId = c.req.param("contextId");
+  const body = await c.req.json<{ definition: string; examples?: string; changedBy?: string }>();
 
-    if (!body.definition) {
-      return c.json({ error: 'Definition is required' }, 400);
-    }
-
-    const updated = await termService.updateTermInContext(
-      termId,
-      contextId,
-      body.definition,
-      body.examples,
-      body.changedBy
-    );
-
-    return c.json(updated);
-  } catch (error) {
-    console.error('Error updating term in context:', error);
-    const message = error instanceof Error ? error.message : 'Failed to update term in context';
-    return c.json({ error: message }, error instanceof Error && error.message.includes('not found') ? 404 : 500);
+  if (!body.definition) {
+    return c.json({ error: "Definition is required" }, 400);
   }
+
+  const result = await termService.updateTermInContext(
+    termId,
+    contextId,
+    body.definition,
+    body.examples,
+    body.changedBy
+  );
+
+  return result.match(
+    (updated) => c.json(updated),
+    (error: AppError) => {
+      console.error("Error updating term in context:", error);
+      return c.json({ error: error.message }, error.statusCode as any);
+    }
+  );
 });
 
 /**
@@ -265,16 +258,17 @@ termsRouter.put('/:id/contexts/:contextId', async (c) => {
  * @returns {object} 404 - 用語またはコンテキストが見つからない場合
  * @returns {object} 500 - サーバーエラー
  */
-termsRouter.delete('/:id/contexts/:contextId', async (c) => {
-  try {
-    const termId = c.req.param('id');
-    const contextId = c.req.param('contextId');
+termsRouter.delete("/:id/contexts/:contextId", async (c) => {
+  const termId = c.req.param("id");
+  const contextId = c.req.param("contextId");
 
-    await termService.removeTermFromContext(termId, contextId);
-    return c.json({ message: 'Term removed from context successfully' });
-  } catch (error) {
-    console.error('Error removing term from context:', error);
-    const message = error instanceof Error ? error.message : 'Failed to remove term from context';
-    return c.json({ error: message }, error instanceof Error && error.message.includes('not found') ? 404 : 500);
-  }
+  const result = await termService.removeTermFromContext(termId, contextId);
+
+  return result.match(
+    () => c.json({ message: "Term removed from context successfully" }),
+    (error: AppError) => {
+      console.error("Error removing term from context:", error);
+      return c.json({ error: error.message }, error.statusCode as any);
+    }
+  );
 });

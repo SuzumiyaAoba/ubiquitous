@@ -1,6 +1,13 @@
-import { termRepository, CreateTermDto, UpdateTermDto, AddTermToContextDto } from '../repositories/term.repository';
-import { termHistoryRepository } from '../repositories/term-history.repository';
-import type { ISearchService } from './search-service.interface';
+import {
+  termRepository,
+  CreateTermDto,
+  UpdateTermDto,
+  AddTermToContextDto,
+} from "../repositories/term.repository";
+import { termHistoryRepository } from "../repositories/term-history.repository";
+import type { ISearchService } from "./search-service.interface";
+import { ResultAsync, ok, err, Result } from "../errors/custom-errors";
+import { NotFoundError, ConflictError } from "../errors/custom-errors";
 
 export class TermService {
   private searchService: ISearchService | null = null;
@@ -20,7 +27,7 @@ export class TermService {
       try {
         await this.searchService.indexTerm(termId);
       } catch (error) {
-        console.error('検索インデックスにタームを同期できませんでした：', error);
+        console.error("検索インデックスにタームを同期できませんでした：", error);
         // スローしない - 検索同期は重要ではありません
       }
     }
@@ -34,7 +41,7 @@ export class TermService {
       try {
         await this.searchService.removeTermFromIndex(termId);
       } catch (error) {
-        console.error('検索インデックスからタームを削除できませんでした：', error);
+        console.error("検索インデックスからタームを削除できませんでした：", error);
         // スローしない - 検索同期は重要ではありません
       }
     }
@@ -43,41 +50,55 @@ export class TermService {
   /**
    * 新しいタームを作成
    */
-  async createTerm(data: CreateTermDto, createdBy: string = 'system') {
-    // 同じ名前のターム既に存在するかを確認
-    const exists = await termRepository.existsByName(data.name);
-    if (exists) {
-      throw new Error(`Term with name "${data.name}" already exists`);
-    }
-
-    const term = await termRepository.create(data);
-
-    // 検索インデックスに同期
-    await this.syncToSearchIndex(term.id);
-
-    return term;
+  createTerm(data: CreateTermDto, createdBy: string = "system") {
+    return ResultAsync.fromPromise(
+      termRepository.existsByName(data.name),
+      (error) => new ConflictError("Term", data.name)
+    )
+      .andThen((exists) => {
+        if (exists) {
+          return err(new ConflictError("Term", data.name));
+        }
+        return ResultAsync.fromPromise(
+          termRepository.create(data),
+          (error) => new ConflictError("Term", data.name)
+        );
+      })
+      .andThen((term) => {
+        // 検索インデックスに同期（エラーは無視）
+        this.syncToSearchIndex(term.id);
+        return ok(term);
+      });
   }
 
   /**
    * IDでタームを取得
    */
-  async getTermById(id: string) {
-    const term = await termRepository.findById(id);
-    if (!term) {
-      throw new Error(`Term with ID "${id}" not found`);
-    }
-    return term;
+  getTermById(id: string) {
+    return ResultAsync.fromPromise(
+      termRepository.findById(id),
+      (error) => new NotFoundError("Term", id)
+    ).andThen((term) => {
+      if (!term) {
+        return err(new NotFoundError("Term", id));
+      }
+      return ok(term);
+    });
   }
 
   /**
    * 関連するすべてのコンテキスト付きのタームを取得
    */
-  async getTermWithContexts(id: string) {
-    const term = await termRepository.getWithContexts(id);
-    if (!term) {
-      throw new Error(`Term with ID "${id}" not found`);
-    }
-    return term;
+  getTermWithContexts(id: string) {
+    return ResultAsync.fromPromise(
+      termRepository.getWithContexts(id),
+      (error) => new NotFoundError("Term", id)
+    ).andThen((term) => {
+      if (!term) {
+        return err(new NotFoundError("Term", id));
+      }
+      return ok(term);
+    });
   }
 
   /**
@@ -105,170 +126,221 @@ export class TermService {
    * タームを更新
    * タームが変更された場合は履歴レコードを作成
    */
-  async updateTerm(id: string, data: UpdateTermDto, changedBy: string = 'system', changeReason?: string) {
-    // 現在のタームを取得
-    const currentTerm = await this.getTermById(id);
+  updateTerm(id: string, data: UpdateTermDto, changedBy: string = "system", changeReason?: string) {
+    return this.getTermById(id)
+      .andThen((currentTerm) => {
+        // 名前が変更されており、新しい名前が既に存在するかをチェック
+        if (data.name && data.name !== currentTerm.name) {
+          return ResultAsync.fromPromise(
+            termRepository.existsByName(data.name),
+            (error) => new ConflictError("Term", data.name)
+          ).andThen((exists) => {
+            if (exists) {
+              return err(new ConflictError("Term", data.name));
+            }
+            return ok(currentTerm);
+          });
+        }
+        return ok(currentTerm);
+      })
+      .andThen((currentTerm) => {
+        // 変更されたフィールドを計算
+        const changedFields: string[] = [];
+        if (data.name && data.name !== currentTerm.name) changedFields.push("name");
+        if (data.description && data.description !== currentTerm.description)
+          changedFields.push("description");
+        if (data.status && data.status !== currentTerm.status) changedFields.push("status");
 
-    // 名前が変更されており、新しい名前が既に存在するかをチェック
-    if (data.name && data.name !== currentTerm.name) {
-      const exists = await termRepository.existsByName(data.name);
-      if (exists) {
-        throw new Error(`Term with name "${data.name}" already exists`);
-      }
-    }
-
-    // 変更されたフィールドを計算
-    const changedFields: string[] = [];
-    if (data.name && data.name !== currentTerm.name) changedFields.push('name');
-    if (data.description && data.description !== currentTerm.description) changedFields.push('description');
-    if (data.status && data.status !== currentTerm.status) changedFields.push('status');
-
-    // タームを更新
-    const updated = await termRepository.update(id, data);
-
-    // 変更があった場合は履歴レコードを作成
-    if (changedFields.length > 0) {
-      const latestVersion = await termHistoryRepository.getLatestVersion(id);
-      await termHistoryRepository.create({
-        termId: id,
-        version: latestVersion + 1,
-        previousDefinition: currentTerm.description || '',
-        newDefinition: updated?.description || '',
-        changedFields,
-        changedBy,
-        changeReason,
+        // タームを更新
+        return ResultAsync.fromPromise(
+          termRepository.update(id, data),
+          (error) => new NotFoundError("Term", id)
+        ).andThen((updated) => {
+          // 変更があった場合は履歴レコードを作成
+          if (changedFields.length > 0) {
+            return ResultAsync.fromPromise(
+              termHistoryRepository.getLatestVersion(id).then((latestVersion) =>
+                termHistoryRepository.create({
+                  termId: id,
+                  version: latestVersion + 1,
+                  previousDefinition: currentTerm.description || "",
+                  newDefinition: updated?.description || "",
+                  changedFields,
+                  changedBy,
+                  changeReason,
+                })
+              ),
+              (error) => new NotFoundError("Term", id)
+            ).andThen(() => ok(updated));
+          }
+          return ok(updated);
+        });
+      })
+      .andThen((updated) => {
+        // 検索インデックスに同期
+        this.syncToSearchIndex(id);
+        return ok(updated);
       });
-    }
-
-    // 検索インデックスに同期
-    await this.syncToSearchIndex(id);
-
-    return updated;
   }
 
   /**
    * タームを削除（デフォルトではソフト削除）
    */
-  async deleteTerm(id: string, permanent: boolean = false) {
-    // ターム存在することを確認
-    await this.getTermById(id);
-
-    let result;
-    if (permanent) {
-      result = await termRepository.delete(id);
-      // 完全削除時に検索インデックスから削除
-      await this.removeFromSearchIndex(id);
-    } else {
-      result = await termRepository.softDelete(id);
-      // 検索インデックスを更新（推奨されない ステータス）
-      await this.syncToSearchIndex(id);
-    }
-
-    return result;
+  deleteTerm(id: string, permanent: boolean = false) {
+    return this.getTermById(id).andThen(() => {
+      if (permanent) {
+        return ResultAsync.fromPromise(
+          termRepository.delete(id),
+          (error) => new NotFoundError("Term", id)
+        ).andThen((result) => {
+          // 完全削除時に検索インデックスから削除
+          this.removeFromSearchIndex(id);
+          return ok(result);
+        });
+      } else {
+        return ResultAsync.fromPromise(
+          termRepository.softDelete(id),
+          (error) => new NotFoundError("Term", id)
+        ).andThen((result) => {
+          // 検索インデックスを更新（推奨されない ステータス）
+          this.syncToSearchIndex(id);
+          return ok(result);
+        });
+      }
+    });
   }
 
   /**
    * 定義を持つコンテキストにタームを追加
    */
-  async addTermToContext(data: AddTermToContextDto, changedBy: string = 'system') {
-    // ターム存在することを確認
-    await this.getTermById(data.termId);
+  addTermToContext(data: AddTermToContextDto, changedBy: string = "system") {
+    return this.getTermById(data.termId).andThen(() => {
+      // 既にコンテキストに含まれているかをチェック
+      return ResultAsync.fromPromise(
+        termRepository.existsInContext(data.termId, data.contextId),
+        (error) => new ConflictError("Term in context")
+      ).andThen((existsInContext) => {
+        if (existsInContext) {
+          return err(new ConflictError("Term in context"));
+        }
 
-    // 既にコンテキストに含まれているかをチェック
-    const existsInContext = await termRepository.existsInContext(data.termId, data.contextId);
-    if (existsInContext) {
-      throw new Error('Term already exists in this context');
-    }
-
-    // コンテキストに追加
-    const termContext = await termRepository.addToContext(data);
-
-    // 履歴レコードを作成
-    const latestVersion = await termHistoryRepository.getLatestVersion(data.termId);
-    await termHistoryRepository.create({
-      termId: data.termId,
-      version: latestVersion + 1,
-      previousDefinition: '',
-      newDefinition: data.definition,
-      changedFields: ['definition', 'context'],
-      changedBy,
-      changeReason: `Added to context ${data.contextId}`,
+        // コンテキストに追加
+        return ResultAsync.fromPromise(
+          termRepository.addToContext(data),
+          (error) => new NotFoundError("Term", data.termId)
+        ).andThen((termContext) => {
+          // 履歴レコードを作成
+          return ResultAsync.fromPromise(
+            termHistoryRepository.getLatestVersion(data.termId).then((latestVersion) =>
+              termHistoryRepository.create({
+                termId: data.termId,
+                version: latestVersion + 1,
+                previousDefinition: "",
+                newDefinition: data.definition,
+                changedFields: ["definition", "context"],
+                changedBy,
+                changeReason: `Added to context ${data.contextId}`,
+              })
+            ),
+            (error) => new NotFoundError("Term", data.termId)
+          ).andThen(() => {
+            // 検索インデックスに同期
+            this.syncToSearchIndex(data.termId);
+            return ok(termContext);
+          });
+        });
+      });
     });
-
-    // 検索インデックスに同期
-    await this.syncToSearchIndex(data.termId);
-
-    return termContext;
   }
 
   /**
    * 特定のコンテキストでターム定義を更新
    */
-  async updateTermInContext(
+  updateTermInContext(
     termId: string,
     contextId: string,
     definition: string,
     examples?: string,
-    changedBy: string = 'system'
+    changedBy: string = "system"
   ) {
-    // ターム存在するかをチェック
-    const existsInContext = await termRepository.existsInContext(termId, contextId);
-    if (!existsInContext) {
-      throw new Error('Term not found in this context');
-    }
+    return ResultAsync.fromPromise(
+      termRepository.existsInContext(termId, contextId),
+      (error) => new NotFoundError("Term in context")
+    ).andThen((existsInContext) => {
+      if (!existsInContext) {
+        return err(new NotFoundError("Term in context"));
+      }
 
-    // 現在の定義を取得
-    const term = await termRepository.getWithContexts(termId);
-    const currentContext = term?.contexts.find(c => c.contextId === contextId);
-    const previousDefinition = currentContext?.definition || '';
+      // 現在の定義を取得
+      return ResultAsync.fromPromise(
+        termRepository.getWithContexts(termId),
+        (error) => new NotFoundError("Term", termId)
+      ).andThen((term) => {
+        const currentContext = term?.contexts.find((c) => c.contextId === contextId);
+        const previousDefinition = currentContext?.definition || "";
 
-    // 定義を更新
-    const updated = await termRepository.updateInContext(termId, contextId, definition, examples);
-
-    // 履歴レコードを作成
-    const latestVersion = await termHistoryRepository.getLatestVersion(termId);
-    await termHistoryRepository.create({
-      termId,
-      version: latestVersion + 1,
-      previousDefinition,
-      newDefinition: definition,
-      changedFields: ['definition'],
-      changedBy,
-      changeReason: `Updated definition in context ${contextId}`,
+        // 定義を更新
+        return ResultAsync.fromPromise(
+          termRepository.updateInContext(termId, contextId, definition, examples),
+          (error) => new NotFoundError("Term", termId)
+        ).andThen((updated) => {
+          // 履歴レコードを作成
+          return ResultAsync.fromPromise(
+            termHistoryRepository.getLatestVersion(termId).then((latestVersion) =>
+              termHistoryRepository.create({
+                termId,
+                version: latestVersion + 1,
+                previousDefinition,
+                newDefinition: definition,
+                changedFields: ["definition"],
+                changedBy,
+                changeReason: `Updated definition in context ${contextId}`,
+              })
+            ),
+            (error) => new NotFoundError("Term", termId)
+          ).andThen(() => {
+            // 検索インデックスに同期
+            this.syncToSearchIndex(termId);
+            return ok(updated);
+          });
+        });
+      });
     });
-
-    // Sync to search index
-    await this.syncToSearchIndex(termId);
-
-    return updated;
   }
 
   /**
    * コンテキストからターム削除
    */
-  async removeTermFromContext(termId: string, contextId: string) {
-    // ターム存在するかをチェック
-    const existsInContext = await termRepository.existsInContext(termId, contextId);
-    if (!existsInContext) {
-      throw new Error('Term not found in this context');
-    }
+  removeTermFromContext(termId: string, contextId: string) {
+    return ResultAsync.fromPromise(
+      termRepository.existsInContext(termId, contextId),
+      (error) => new NotFoundError("Term in context")
+    ).andThen((existsInContext) => {
+      if (!existsInContext) {
+        return err(new NotFoundError("Term in context"));
+      }
 
-    const result = await termRepository.removeFromContext(termId, contextId);
-
-    // 検索インデックスに同期
-    await this.syncToSearchIndex(termId);
-
-    return result;
+      return ResultAsync.fromPromise(
+        termRepository.removeFromContext(termId, contextId),
+        (error) => new NotFoundError("Term", termId)
+      ).andThen((result) => {
+        // 検索インデックスに同期
+        this.syncToSearchIndex(termId);
+        return ok(result);
+      });
+    });
   }
 
   /**
    * ターム履歴を取得
    */
-  async getTermHistory(id: string) {
-    // ターム存在することを確認
-    await this.getTermById(id);
-
-    return await termHistoryRepository.findByTermId(id);
+  getTermHistory(id: string) {
+    return this.getTermById(id).andThen(() => {
+      return ResultAsync.fromPromise(
+        termHistoryRepository.findByTermId(id),
+        (error) => new NotFoundError("Term history", id)
+      );
+    });
   }
 }
 
