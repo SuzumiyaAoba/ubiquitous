@@ -3,6 +3,13 @@
  * アプリケーション全体で一貫したエラーハンドリングを提供します
  */
 
+import { Result, ResultAsync, ok, err } from "neverthrow";
+
+/**
+ * Result型のエクスポート
+ */
+export { Result, ResultAsync, ok, err };
+
 /**
  * ベースエラークラス
  */

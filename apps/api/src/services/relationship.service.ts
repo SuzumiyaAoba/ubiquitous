@@ -3,11 +3,11 @@ import {
   CreateTermRelationshipDto,
   UpdateTermRelationshipDto,
   RelationshipType,
-} from '../repositories/term-relationship.repository';
-import { termRepository } from '../repositories/term.repository';
-import { db } from '../db';
-import { terms, termRelationships } from '../db/schema';
-import { eq, or } from 'drizzle-orm';
+} from "../repositories/term-relationship.repository";
+import { termRepository } from "../repositories/term.repository";
+import { db } from "../db";
+import { terms, termRelationships } from "../db/schema";
+import { eq, or } from "drizzle-orm";
 
 export class RelationshipService {
   /**
@@ -38,7 +38,7 @@ export class RelationshipService {
 
     // ターム自体への関係を作成できません
     if (data.sourceTermId === data.targetTermId) {
-      throw new Error('Cannot create a relationship from a term to itself');
+      throw new Error("Cannot create a relationship from a term to itself");
     }
 
     // 関係が既に存在するかをチェック
@@ -55,12 +55,10 @@ export class RelationshipService {
     }
 
     // 親-子関係については、循環依存をチェック
-    if (data.relationshipType === 'parent' || data.relationshipType === 'child') {
+    if (data.relationshipType === "parent" || data.relationshipType === "child") {
       const wouldCycle = await this.wouldCreateCycle(data.sourceTermId, data.targetTermId);
       if (wouldCycle) {
-        throw new Error(
-          'Cannot create this relationship as it would create a circular dependency'
-        );
+        throw new Error("Cannot create this relationship as it would create a circular dependency");
       }
     }
 
@@ -114,7 +112,7 @@ export class RelationshipService {
           id: rel.id,
           relationshipType: rel.relationshipType,
           description: rel.description,
-          direction: rel.sourceTermId === termId ? 'outgoing' : 'incoming',
+          direction: rel.sourceTermId === termId ? "outgoing" : "incoming",
           relatedTerm: relatedTerm
             ? {
                 id: relatedTerm.id,
@@ -143,12 +141,18 @@ export class RelationshipService {
     const existing = await this.getRelationshipById(id);
 
     // 関係タイプを親/子に変更する場合は、サイクルをチェック
-    if (data.relationshipType && (data.relationshipType === 'parent' || data.relationshipType === 'child')) {
+    if (
+      data.relationshipType &&
+      (data.relationshipType === "parent" || data.relationshipType === "child")
+    ) {
       if (existing.relationshipType !== data.relationshipType) {
-        const wouldCycle = await this.wouldCreateCycle(existing.sourceTermId, existing.targetTermId);
+        const wouldCycle = await this.wouldCreateCycle(
+          existing.sourceTermId,
+          existing.targetTermId
+        );
         if (wouldCycle) {
           throw new Error(
-            'Cannot change to this relationship type as it would create a circular dependency'
+            "Cannot change to this relationship type as it would create a circular dependency"
           );
         }
       }
@@ -173,7 +177,7 @@ export class RelationshipService {
   async deleteRelationshipBetweenTerms(sourceTermId: string, targetTermId: string) {
     const deleted = await termRelationshipRepository.deleteByTerms(sourceTermId, targetTermId);
     if (!deleted) {
-      throw new Error('Relationship not found between these terms');
+      throw new Error("Relationship not found between these terms");
     }
     return deleted;
   }
@@ -244,10 +248,7 @@ export class RelationshipService {
       .select()
       .from(termRelationships)
       .where(
-        or(
-          eq(termRelationships.sourceTermId, termId),
-          eq(termRelationships.targetTermId, termId)
-        )
+        or(eq(termRelationships.sourceTermId, termId), eq(termRelationships.targetTermId, termId))
       );
 
     const relatedTermIds = relationships
@@ -255,9 +256,7 @@ export class RelationshipService {
       .map((rel) => (rel.sourceTermId === termId ? rel.targetTermId : rel.sourceTermId));
 
     // ターム詳細を取得
-    const relatedTerms = await Promise.all(
-      relatedTermIds.map((id) => termRepository.findById(id))
-    );
+    const relatedTerms = await Promise.all(relatedTermIds.map((id) => termRepository.findById(id)));
 
     return relatedTerms.filter((term) => term !== null);
   }
@@ -295,7 +294,8 @@ export class RelationshipService {
     if (!term) return null;
 
     // 子関係を検索
-      (rel) => rel.sourceTermId === termId && rel.relationshipType === 'child'
+    const childRelationships = allRelationships.filter(
+      (rel) => rel.sourceTermId === termId && rel.relationshipType === "child"
     );
 
     const children = await Promise.all(
