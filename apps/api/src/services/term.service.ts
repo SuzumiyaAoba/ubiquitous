@@ -1,13 +1,14 @@
 import { termRepository, CreateTermDto, UpdateTermDto, AddTermToContextDto } from '../repositories/term.repository';
 import { termHistoryRepository } from '../repositories/term-history.repository';
+import type { ISearchService } from './search-service.interface';
 
 export class TermService {
-  private searchService: any = null;
+  private searchService: ISearchService | null = null;
 
   /**
    * 検索サービスを設定（循環依存を回避するため）
    */
-  setSearchService(service: any) {
+  setSearchService(service: ISearchService) {
     this.searchService = service;
   }
 

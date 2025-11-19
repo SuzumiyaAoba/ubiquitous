@@ -120,13 +120,15 @@ termsRouter.put('/:id', async (c) => {
     console.error('Error updating term:', error);
     const message = error instanceof Error ? error.message : 'Failed to update term';
 
-    let status = 500;
     if (error instanceof Error) {
-      if (error.message.includes('not found')) status = 404;
-      else if (error.message.includes('already exists')) status = 409;
+      if (error.message.includes('not found')) {
+        return c.json({ error: message }, 404);
+      } else if (error.message.includes('already exists')) {
+        return c.json({ error: message }, 409);
+      }
     }
 
-    return c.json({ error: message }, status as any);
+    return c.json({ error: message }, 500);
   }
 });
 
@@ -207,8 +209,10 @@ termsRouter.post('/:id/contexts', async (c) => {
   } catch (error) {
     console.error('Error adding term to context:', error);
     const message = error instanceof Error ? error.message : 'Failed to add term to context';
-    const status = error instanceof Error && error.message.includes('already exists') ? 409 : 500;
-    return c.json({ error: message }, status as any);
+    if (error instanceof Error && error.message.includes('already exists')) {
+      return c.json({ error: message }, 409);
+    }
+    return c.json({ error: message }, 500);
   }
 });
 

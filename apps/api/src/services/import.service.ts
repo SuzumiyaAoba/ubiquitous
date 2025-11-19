@@ -208,7 +208,7 @@ export class ImportService {
   /**
    * インポートデータ構造を検証
    */
-  private validateImportData(data: any): string[] {
+  private validateImportData(data: unknown): string[] {
     const errors: string[] = [];
 
     if (!data || typeof data !== 'object') {
@@ -216,31 +216,43 @@ export class ImportService {
       return errors;
     }
 
-    if (!data.version) {
+    const dataObj = data as Record<string, unknown>;
+
+    if (!dataObj.version) {
       errors.push('Missing version field');
     }
 
-    if (!Array.isArray(data.contexts)) {
+    if (!Array.isArray(dataObj.contexts)) {
       errors.push('Missing or invalid contexts array');
     }
 
-    if (!Array.isArray(data.terms)) {
+    if (!Array.isArray(dataObj.terms)) {
       errors.push('Missing or invalid terms array');
     }
 
     // コンテキストを検証
-    if (Array.isArray(data.contexts)) {
-      data.contexts.forEach((context: any, index: number) => {
-        if (!context.name) {
+    if (Array.isArray(dataObj.contexts)) {
+      dataObj.contexts.forEach((context: unknown, index: number) => {
+        if (!context || typeof context !== 'object') {
+          errors.push(`Context at index ${index} is not a valid object`);
+          return;
+        }
+        const contextObj = context as Record<string, unknown>;
+        if (!contextObj.name) {
           errors.push(`Context at index ${index} is missing required field: name`);
         }
       });
     }
 
     // タームを検証
-    if (Array.isArray(data.terms)) {
-      data.terms.forEach((term: any, index: number) => {
-        if (!term.name) {
+    if (Array.isArray(dataObj.terms)) {
+      dataObj.terms.forEach((term: unknown, index: number) => {
+        if (!term || typeof term !== 'object') {
+          errors.push(`Term at index ${index} is not a valid object`);
+          return;
+        }
+        const termObj = term as Record<string, unknown>;
+        if (!termObj.name) {
           errors.push(`Term at index ${index} is missing required field: name`);
         }
       });
