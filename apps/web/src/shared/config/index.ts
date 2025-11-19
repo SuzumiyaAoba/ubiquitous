@@ -1,2 +1,2 @@
 // アプリケーション設定のPublic API
-export {};
+export { env } from "./env";
