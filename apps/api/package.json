@@ -7,6 +7,9 @@
     "build": "tsc",
     "start": "node dist/index.js",
     "lint": "eslint . --ext .ts",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest --coverage",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "tsx src/db/migrate.ts",
     "db:push": "drizzle-kit push",
@@ -22,7 +25,8 @@
     "meilisearch": "^0.54.0",
     "neverthrow": "^8.2.0",
     "pg": "^8.11.0",
-    "postgres": "^3.4.0"
+    "postgres": "^3.4.0",
+    "zod": "^4.1.12"
   },
   "devDependencies": {
     "@types/node": "^20.19.25",
