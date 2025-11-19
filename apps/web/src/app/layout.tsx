@@ -39,6 +39,18 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 >
                   検索
                 </Link>
+                <Link
+                  href="/relationships"
+                  className="inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-500 hover:text-gray-900"
+                >
+                  関係性
+                </Link>
+                <Link
+                  href="/discussions"
+                  className="inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-500 hover:text-gray-900"
+                >
+                  ディスカッション
+                </Link>
               </div>
             </div>
           </div>
