@@ -1,8 +1,12 @@
-import { codeAnalysisRepository, CreateCodeAnalysisDto } from '../repositories/code-analysis.repository';
-import { termRepository } from '../repositories/term.repository';
+import { distance } from "fastest-levenshtein";
+import {
+  codeAnalysisRepository,
+  CreateCodeAnalysisDto,
+} from "../repositories/code-analysis.repository";
+import { termRepository } from "../repositories/term.repository";
 
 export interface CodeElement {
-  type: 'class' | 'method' | 'variable';
+  type: "class" | "method" | "variable";
   name: string;
   line: number;
   matched: boolean;
@@ -53,9 +57,7 @@ export class CodeAnalysisService {
       });
 
       if (matched) {
-        const matchedTerm = terms.find((t) =>
-          this.isMatch(element.name, t.name)
-        );
+        const matchedTerm = terms.find((t) => this.isMatch(element.name, t.name));
         matchedElements.push({
           ...element,
           matched: true,
@@ -73,9 +75,10 @@ export class CodeAnalysisService {
     }
 
     // マッチレートを計算
-    const matchRate = elements.length > 0
-      ? (matchedElements.filter((e) => e.matched).length / elements.length) * 100
-      : 0;
+    const matchRate =
+      elements.length > 0
+        ? (matchedElements.filter((e) => e.matched).length / elements.length) * 100
+        : 0;
 
     // 分析を保存
     const analysis = await codeAnalysisRepository.create({
@@ -129,7 +132,7 @@ export class CodeAnalysisService {
    */
   private extractCodeElements(code: string): CodeElement[] {
     const elements: CodeElement[] = [];
-    const lines = code.split('\n');
+    const lines = code.split("\n");
 
     // クラスを抽出
     const classRegex = /(?:export\s+)?(?:abstract\s+)?class\s+(\w+)/g;
@@ -137,7 +140,7 @@ export class CodeAnalysisService {
       let match;
       while ((match = classRegex.exec(line)) !== null) {
         elements.push({
-          type: 'class',
+          type: "class",
           name: match[1],
           line: index + 1,
           matched: false,
@@ -152,9 +155,9 @@ export class CodeAnalysisService {
       while ((match = methodRegex.exec(line)) !== null) {
         const name = match[1];
         // 一般的なキーワードをスキップ
-        if (!['if', 'for', 'while', 'switch', 'catch'].includes(name)) {
+        if (!["if", "for", "while", "switch", "catch"].includes(name)) {
           elements.push({
-            type: 'method',
+            type: "method",
             name,
             line: index + 1,
             matched: false,
@@ -169,7 +172,7 @@ export class CodeAnalysisService {
       let match;
       while ((match = varRegex.exec(line)) !== null) {
         elements.push({
-          type: 'variable',
+          type: "variable",
           name: match[1],
           line: index + 1,
           matched: false,
@@ -186,7 +189,7 @@ export class CodeAnalysisService {
   private normalizeIdentifier(identifier: string): string {
     // camelCaseをスペース区切りの単語に変換
     return identifier
-      .replace(/([a-z])([A-Z])/g, '$1 $2')
+      .replace(/([a-z])([A-Z])/g, "$1 $2")
       .toLowerCase()
       .trim();
   }
@@ -258,31 +261,7 @@ export class CodeAnalysisService {
    * レーベンシュタイン距離を計算
    */
   private levenshteinDistance(str1: string, str2: string): number {
-    const matrix: number[][] = [];
-
-    for (let i = 0; i <= str2.length; i++) {
-      matrix[i] = [i];
-    }
-
-    for (let j = 0; j <= str1.length; j++) {
-      matrix[0][j] = j;
-    }
-
-    for (let i = 1; i <= str2.length; i++) {
-      for (let j = 1; j <= str1.length; j++) {
-        if (str2.charAt(i - 1) === str1.charAt(j - 1)) {
-          matrix[i][j] = matrix[i - 1][j - 1];
-        } else {
-          matrix[i][j] = Math.min(
-            matrix[i - 1][j - 1] + 1,
-            matrix[i][j - 1] + 1,
-            matrix[i - 1][j] + 1
-          );
-        }
-      }
-    }
-
-    return matrix[str2.length][str1.length];
+    return distance(str1, str2);
   }
 }
 

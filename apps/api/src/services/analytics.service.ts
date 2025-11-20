@@ -1,9 +1,10 @@
-import { termRepository } from '../repositories/term.repository';
-import { contextRepository } from '../repositories/context.repository';
-import { userLearningRepository } from '../repositories/user-learning.repository';
-import { reviewRepository } from '../repositories/review.repository';
-import { termProposalRepository } from '../repositories/term-proposal.repository';
-import { discussionRepository } from '../repositories/discussion.repository';
+import { countBy } from "es-toolkit";
+import { termRepository } from "../repositories/term.repository";
+import { contextRepository } from "../repositories/context.repository";
+import { userLearningRepository } from "../repositories/user-learning.repository";
+import { reviewRepository } from "../repositories/review.repository";
+import { termProposalRepository } from "../repositories/term-proposal.repository";
+import { discussionRepository } from "../repositories/discussion.repository";
 
 export interface SystemMetrics {
   totalTerms: number;
@@ -38,7 +39,7 @@ export interface CoverageMetrics {
   averageContextsPerTerm: number;
 }
 
-export type ExportFormat = 'json' | 'csv';
+export type ExportFormat = "json" | "csv";
 
 export class AnalyticsService {
   /**
@@ -48,16 +49,17 @@ export class AnalyticsService {
     const allTerms = await termRepository.findAll();
     const allContexts = await contextRepository.findAll();
     const allProposals = await termProposalRepository.findAll();
-    const pendingProposals = await termProposalRepository.findByStatus('pending');
-    const approvedProposals = await termProposalRepository.findByStatus('approved');
+    const pendingProposals = await termProposalRepository.findByStatus("pending");
+    const approvedProposals = await termProposalRepository.findByStatus("approved");
     const allThreads = await discussionRepository.findAllThreads();
-    const openThreads = await discussionRepository.findThreadsByStatus('open');
+    const openThreads = await discussionRepository.findThreadsByStatus("open");
     const essentialTerms = await termRepository.findEssentialTerms();
 
     // ステータス別にターム数をカウント
-    const activeTerms = allTerms.filter((t) => t.status === 'active').length;
-    const draftTerms = allTerms.filter((t) => t.status === 'draft').length;
-    const deprecatedTerms = allTerms.filter((t) => t.status === 'deprecated').length;
+    const statusCounts = countBy(allTerms, (t) => t.status);
+    const activeTerms = statusCounts.active ?? 0;
+    const draftTerms = statusCounts.draft ?? 0;
+    const deprecatedTerms = statusCounts.deprecated ?? 0;
 
     // すべてのターム全体のレビュー数をカウント
     let totalReviews = 0;
@@ -87,10 +89,17 @@ export class AnalyticsService {
    */
   async getUserActivityMetrics(): Promise<UserActivityMetrics> {
     const allProposals = await termProposalRepository.findAll();
-    const allReviews = await reviewRepository.findByStatus('confirmed')
-      .then((confirmed) => reviewRepository.findByStatus('needs_update')
-        .then((needsUpdate) => reviewRepository.findByStatus('needs_discussion')
-          .then((needsDiscussion) => [...confirmed, ...needsUpdate, ...needsDiscussion])));
+    const allReviews = await reviewRepository
+      .findByStatus("confirmed")
+      .then((confirmed) =>
+        reviewRepository
+          .findByStatus("needs_update")
+          .then((needsUpdate) =>
+            reviewRepository
+              .findByStatus("needs_discussion")
+              .then((needsDiscussion) => [...confirmed, ...needsUpdate, ...needsDiscussion])
+          )
+      );
 
     // 異なるアクティビティからユニークユーザーを取得
     const uniqueProposers = new Set(allProposals.map((p) => p.proposedBy));
@@ -134,7 +143,7 @@ export class AnalyticsService {
     const essentialTerms = await termRepository.findEssentialTerms();
 
     let termsWithContexts = 0;
-    let termsWithRelationships = 0;
+    const termsWithRelationships = 0;
     let termsWithReviews = 0;
     let totalContextCount = 0;
 
@@ -189,11 +198,11 @@ export class AnalyticsService {
   async exportMetrics(format: ExportFormat): Promise<string> {
     const metrics = await this.getAllMetrics();
 
-    if (format === 'json') {
+    if (format === "json") {
       return JSON.stringify(metrics, null, 2);
     }
 
-    if (format === 'csv') {
+    if (format === "csv") {
       return this.convertMetricsToCSV(metrics);
     }
 
@@ -207,38 +216,38 @@ export class AnalyticsService {
     const lines: string[] = [];
 
     // ヘッダー
-    lines.push('Category,Metric,Value');
+    lines.push("Category,Metric,Value");
 
     // システムメトリクス
-    lines.push('System,Total Terms,' + metrics.system.totalTerms);
-    lines.push('System,Active Terms,' + metrics.system.activeTerms);
-    lines.push('System,Draft Terms,' + metrics.system.draftTerms);
-    lines.push('System,Deprecated Terms,' + metrics.system.deprecatedTerms);
-    lines.push('System,Total Contexts,' + metrics.system.totalContexts);
-    lines.push('System,Total Proposals,' + metrics.system.totalProposals);
-    lines.push('System,Pending Proposals,' + metrics.system.pendingProposals);
-    lines.push('System,Approved Proposals,' + metrics.system.approvedProposals);
-    lines.push('System,Total Discussion Threads,' + metrics.system.totalDiscussionThreads);
-    lines.push('System,Open Threads,' + metrics.system.openThreads);
-    lines.push('System,Total Reviews,' + metrics.system.totalReviews);
-    lines.push('System,Essential Terms,' + metrics.system.essentialTerms);
+    lines.push("System,Total Terms," + metrics.system.totalTerms);
+    lines.push("System,Active Terms," + metrics.system.activeTerms);
+    lines.push("System,Draft Terms," + metrics.system.draftTerms);
+    lines.push("System,Deprecated Terms," + metrics.system.deprecatedTerms);
+    lines.push("System,Total Contexts," + metrics.system.totalContexts);
+    lines.push("System,Total Proposals," + metrics.system.totalProposals);
+    lines.push("System,Pending Proposals," + metrics.system.pendingProposals);
+    lines.push("System,Approved Proposals," + metrics.system.approvedProposals);
+    lines.push("System,Total Discussion Threads," + metrics.system.totalDiscussionThreads);
+    lines.push("System,Open Threads," + metrics.system.openThreads);
+    lines.push("System,Total Reviews," + metrics.system.totalReviews);
+    lines.push("System,Essential Terms," + metrics.system.essentialTerms);
 
     // ユーザー活動メトリクス
-    lines.push('User Activity,Unique Reviewers,' + metrics.userActivity.uniqueReviewers);
-    lines.push('User Activity,Unique Learners,' + metrics.userActivity.uniqueLearners);
-    lines.push('User Activity,Unique Proposers,' + metrics.userActivity.uniqueProposers);
-    lines.push('User Activity,Unique Commenters,' + metrics.userActivity.uniqueCommenters);
-    lines.push('User Activity,Total Active Users,' + metrics.userActivity.totalActiveUsers);
+    lines.push("User Activity,Unique Reviewers," + metrics.userActivity.uniqueReviewers);
+    lines.push("User Activity,Unique Learners," + metrics.userActivity.uniqueLearners);
+    lines.push("User Activity,Unique Proposers," + metrics.userActivity.uniqueProposers);
+    lines.push("User Activity,Unique Commenters," + metrics.userActivity.uniqueCommenters);
+    lines.push("User Activity,Total Active Users," + metrics.userActivity.totalActiveUsers);
 
     // カバレッジメトリクス
-    lines.push('Coverage,Total Terms,' + metrics.coverage.totalTerms);
-    lines.push('Coverage,Terms with Contexts,' + metrics.coverage.termsWithContexts);
-    lines.push('Coverage,Terms with Relationships,' + metrics.coverage.termsWithRelationships);
-    lines.push('Coverage,Terms with Reviews,' + metrics.coverage.termsWithReviews);
-    lines.push('Coverage,Essential Terms Coverage,' + metrics.coverage.essentialTermsCoverage);
-    lines.push('Coverage,Average Contexts per Term,' + metrics.coverage.averageContextsPerTerm);
+    lines.push("Coverage,Total Terms," + metrics.coverage.totalTerms);
+    lines.push("Coverage,Terms with Contexts," + metrics.coverage.termsWithContexts);
+    lines.push("Coverage,Terms with Relationships," + metrics.coverage.termsWithRelationships);
+    lines.push("Coverage,Terms with Reviews," + metrics.coverage.termsWithReviews);
+    lines.push("Coverage,Essential Terms Coverage," + metrics.coverage.essentialTermsCoverage);
+    lines.push("Coverage,Average Contexts per Term," + metrics.coverage.averageContextsPerTerm);
 
-    return lines.join('\n');
+    return lines.join("\n");
   }
 
   /**
@@ -247,15 +256,9 @@ export class AnalyticsService {
   async getMostActiveProposers(limit: number = 10) {
     const allProposals = await termProposalRepository.findAll();
 
-    // 提案者ごとの提案数をカウント
-    const proposerCounts = new Map<string, number>();
-    allProposals.forEach((proposal) => {
-      const count = proposerCounts.get(proposal.proposedBy) || 0;
-      proposerCounts.set(proposal.proposedBy, count + 1);
-    });
-
-    // 数でソートしてトップNを取得
-    const sorted = Array.from(proposerCounts.entries())
+    // 提案者ごとの提案数をカウントし、トップNを取得
+    const proposerCounts = countBy(allProposals, (p) => p.proposedBy);
+    const sorted = Object.entries(proposerCounts)
       .sort((a, b) => b[1] - a[1])
       .slice(0, limit);
 
@@ -269,20 +272,21 @@ export class AnalyticsService {
    * 最もアクティブなレビュアーを取得（今後の追跡用プレースホルダー）
    */
   async getMostActiveReviewers(limit: number = 10) {
-    const allReviews = await reviewRepository.findByStatus('confirmed')
-      .then((confirmed) => reviewRepository.findByStatus('needs_update')
-        .then((needsUpdate) => reviewRepository.findByStatus('needs_discussion')
-          .then((needsDiscussion) => [...confirmed, ...needsUpdate, ...needsDiscussion])));
+    const allReviews = await reviewRepository
+      .findByStatus("confirmed")
+      .then((confirmed) =>
+        reviewRepository
+          .findByStatus("needs_update")
+          .then((needsUpdate) =>
+            reviewRepository
+              .findByStatus("needs_discussion")
+              .then((needsDiscussion) => [...confirmed, ...needsUpdate, ...needsDiscussion])
+          )
+      );
 
-    // レビュアーごとのレビュー数をカウント
-    const reviewerCounts = new Map<string, number>();
-    allReviews.forEach((review) => {
-      const count = reviewerCounts.get(review.reviewedBy) || 0;
-      reviewerCounts.set(review.reviewedBy, count + 1);
-    });
-
-    // 数でソートしてトップNを取得
-    const sorted = Array.from(reviewerCounts.entries())
+    // レビュアーごとのレビュー数をカウントし、トップNを取得
+    const reviewerCounts = countBy(allReviews, (r) => r.reviewedBy);
+    const sorted = Object.entries(reviewerCounts)
       .sort((a, b) => b[1] - a[1])
       .slice(0, limit);
 

@@ -1,9 +1,9 @@
-import { termRepository } from '../repositories/term.repository';
-import { contextRepository } from '../repositories/context.repository';
-import { termRelationshipRepository } from '../repositories/term-relationship.repository';
-import { termProposalRepository } from '../repositories/term-proposal.repository';
-import { discussionRepository } from '../repositories/discussion.repository';
-import { reviewRepository } from '../repositories/review.repository';
+import { termRepository } from "../repositories/term.repository";
+import { contextRepository } from "../repositories/context.repository";
+import { termRelationshipRepository } from "../repositories/term-relationship.repository";
+import { termProposalRepository } from "../repositories/term-proposal.repository";
+import { discussionRepository } from "../repositories/discussion.repository";
+import { reviewRepository } from "../repositories/review.repository";
 
 export interface ExportData {
   version: string;
@@ -36,62 +36,62 @@ export class ExportService {
     const lines: string[] = [];
 
     // ヘッダー
-    lines.push('# Ubiquitous Language Documentation');
-    lines.push('');
+    lines.push("# Ubiquitous Language Documentation");
+    lines.push("");
     lines.push(`Generated on: ${new Date().toISOString()}`);
-    lines.push('');
-    lines.push('---');
-    lines.push('');
+    lines.push("");
+    lines.push("---");
+    lines.push("");
 
     // 目次
-    lines.push('## Table of Contents');
-    lines.push('');
+    lines.push("## Table of Contents");
+    lines.push("");
     for (const context of contexts) {
       lines.push(`- [${context.name}](#${this.slugify(context.name)})`);
     }
-    lines.push('');
-    lines.push('---');
-    lines.push('');
+    lines.push("");
+    lines.push("---");
+    lines.push("");
 
     // 各コンテキストごと
     for (const context of contexts) {
       lines.push(`## ${context.name}`);
-      lines.push('');
+      lines.push("");
 
       if (context.description) {
         lines.push(context.description);
-        lines.push('');
+        lines.push("");
       }
 
       // このコンテキスト内のターム取得
       const contextTerms = await termRepository.findByContextId(context.id);
 
       if (contextTerms.length > 0) {
-        lines.push('### ターム');
-        lines.push('');
+        lines.push("### ターム");
+        lines.push("");
 
         for (const termInContext of contextTerms) {
           lines.push(`#### ${termInContext.name}`);
-          lines.push('');
+          lines.push("");
 
           // ステータスバッジ
           lines.push(`**Status:** \`${termInContext.status}\``);
-          lines.push('');
+          lines.push("");
 
           // このコンテキスト内の定義
           if (termInContext.definition) {
-            lines.push('**Definition:**');
-            lines.push('');
+            lines.push("**Definition:**");
+            lines.push("");
             lines.push(termInContext.definition);
-            lines.push('');
+            lines.push("");
           }
 
           // 例
           if (termInContext.examples) {
-            lines.push('**例:**');
-            lines.push('');
+            lines.push("**例:**");
+            lines.push("");
             lines.push(termInContext.examples);
-            lines.push('');
+            lines.push("");
           }
 
           // 関係を取得
@@ -100,8 +100,8 @@ export class ExportService {
           );
 
           if (relationships.length > 0) {
-            lines.push('**関係:**');
-            lines.push('');
+            lines.push("**関係:**");
+            lines.push("");
 
             for (const rel of relationships) {
               // ターゲットターム名を取得
@@ -113,33 +113,33 @@ export class ExportService {
                 }
               }
             }
-            lines.push('');
+            lines.push("");
           }
 
           // レビューを取得
           const termReviews = await reviewRepository.findByTermId(termInContext.id);
           if (termReviews.length > 0) {
             const latestReview = termReviews[0]; // 日付の降順でソート済み
-            lines.push('**最新レビュー:**');
-            lines.push('');
+            lines.push("**最新レビュー:**");
+            lines.push("");
             lines.push(
               `- Status: \`${latestReview.status}\` (${new Date(latestReview.reviewedAt).toLocaleDateString()})`
             );
             if (latestReview.notes) {
               lines.push(`- Notes: ${latestReview.notes}`);
             }
-            lines.push('');
+            lines.push("");
           }
 
-          lines.push('---');
-          lines.push('');
+          lines.push("---");
+          lines.push("");
         }
       } else {
-        lines.push('*No terms defined in this context yet.*');
-        lines.push('');
+        lines.push("*No terms defined in this context yet.*");
+        lines.push("");
       }
 
-      lines.push('');
+      lines.push("");
     }
 
     // Unassigned terms (terms not in any context)
@@ -152,40 +152,35 @@ export class ExportService {
     }
 
     if (unassignedTerms.length > 0) {
-      lines.push('## 未割り当てターム');
-      lines.push('');
-      lines.push('*まだバウンドされたコンテキストに割り当てられていないターム。*');
-      lines.push('');
+      lines.push("## 未割り当てターム");
+      lines.push("");
+      lines.push("*まだバウンドされたコンテキストに割り当てられていないターム。*");
+      lines.push("");
 
       for (const term of unassignedTerms) {
         lines.push(`### ${term.name}`);
-        lines.push('');
+        lines.push("");
         lines.push(`**Status:** \`${term.status}\``);
-        lines.push('');
+        lines.push("");
 
         if (term.description) {
           lines.push(term.description);
-          lines.push('');
+          lines.push("");
         }
 
-        lines.push('---');
-        lines.push('');
+        lines.push("---");
+        lines.push("");
       }
     }
 
-    return lines.join('\n');
+    return lines.join("\n");
   }
 
   /**
    * エクスポート用にすべてのデータを取得
    */
   private async getAllData(): Promise<ExportData> {
-    const [
-      contexts,
-      terms,
-      allProposals,
-      allThreads,
-    ] = await Promise.all([
+    const [contexts, terms, allProposals, allThreads] = await Promise.all([
       contextRepository.findAll(),
       termRepository.findAll(),
       termProposalRepository.findAll(),
@@ -193,45 +188,38 @@ export class ExportService {
     ]);
 
     // すべてのターム-コンテキストを取得
-    const termContexts: any[] = [];
-    for (const term of terms) {
-      const withContexts = await termRepository.getWithContexts(term.id);
-      if (withContexts) {
-        for (const context of withContexts.contexts) {
-          termContexts.push({
+    const termContexts = (
+      await Promise.all(
+        terms.map(async (term) => {
+          const withContexts = await termRepository.getWithContexts(term.id);
+          return (withContexts?.contexts ?? []).map((context) => ({
             termId: term.id,
             termName: term.name,
             ...context,
-          });
-        }
-      }
-    }
+          }));
+        })
+      )
+    ).flat();
 
     // すべての関係を取得
-    const relationships: any[] = [];
-    for (const term of terms) {
-      const rels = await termRelationshipRepository.findByTermId(term.id);
-      relationships.push(...rels);
-    }
+    const relationships = (
+      await Promise.all(terms.map((term) => termRelationshipRepository.findByTermId(term.id)))
+    ).flat();
 
     // コメント付きのすべてのディスカッションを取得
-    const discussions: any[] = [];
-    for (const thread of allThreads) {
-      const withComments = await discussionRepository.getThreadWithComments(thread.id);
-      if (withComments) {
-        discussions.push(withComments);
-      }
-    }
+    const discussions = (
+      await Promise.all(
+        allThreads.map((thread) => discussionRepository.getThreadWithComments(thread.id))
+      )
+    ).filter((d): d is NonNullable<typeof d> => d !== null);
 
     // すべてのレビューを取得
-    const reviews: any[] = [];
-    for (const term of terms) {
-      const termReviews = await reviewRepository.findByTermId(term.id);
-      reviews.push(...termReviews);
-    }
+    const reviews = (
+      await Promise.all(terms.map((term) => reviewRepository.findByTermId(term.id)))
+    ).flat();
 
     return {
-      version: '1.0.0',
+      version: "1.0.0",
       exportedAt: new Date().toISOString(),
       contexts,
       terms,
@@ -250,9 +238,9 @@ export class ExportService {
     return text
       .toLowerCase()
       .trim()
-      .replace(/[^\w\s-]/g, '')
-      .replace(/[\s_-]+/g, '-')
-      .replace(/^-+|-+$/g, '');
+      .replace(/[^\w\s-]/g, "")
+      .replace(/[\s_-]+/g, "-")
+      .replace(/^-+|-+$/g, "");
   }
 }
 

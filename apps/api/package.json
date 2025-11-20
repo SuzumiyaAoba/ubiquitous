@@ -21,6 +21,8 @@
     "dotenv": "^16.4.0",
     "drizzle-kit": "^0.31.7",
     "drizzle-orm": "^0.44.7",
+    "es-toolkit": "^1.42.0",
+    "fastest-levenshtein": "^1.0.16",
     "hono": "^4.0.0",
     "meilisearch": "^0.54.0",
     "neverthrow": "^8.2.0",
