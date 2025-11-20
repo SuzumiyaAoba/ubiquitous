@@ -39,7 +39,7 @@ export class ImportService {
 
     try {
       // JSONをパース
-      const data: ExportData = JSON.parse(jsonData);
+      const data = JSON.parse(jsonData) as ExportData;
 
       // 構造を検証
       const validationErrors = this.validateImportData(data);

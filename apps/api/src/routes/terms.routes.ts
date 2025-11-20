@@ -5,6 +5,7 @@
  */
 
 import { Hono } from "hono";
+import { z } from "zod";
 import { termService } from "../services/term.service";
 import type {
   CreateTermDto,
@@ -12,6 +13,12 @@ import type {
   AddTermToContextDto,
 } from "../repositories/term.repository";
 import type { AppError } from "../errors/custom-errors";
+import { validateBody } from "../middleware/validation";
+import {
+  CreateTermDtoSchema,
+  UpdateTermDtoSchema,
+  AddTermToContextDtoSchema,
+} from "@ubiquitous/types";
 
 export const termsRouter = new Hono();
 
@@ -26,14 +33,12 @@ export const termsRouter = new Hono();
  * @returns {object} 409 - 同名の用語が既に存在する場合
  * @returns {object} 500 - サーバーエラー
  */
-termsRouter.post("/", async (c) => {
-  const body = await c.req.json<CreateTermDto & { createdBy?: string }>();
+const CreateTermWithUserSchema = CreateTermDtoSchema.extend({
+  createdBy: z.string().uuid().optional(),
+});
 
-  // Validate required fields
-  if (!body.name) {
-    return c.json({ error: "Name is required" }, 400);
-  }
-
+termsRouter.post("/", validateBody(CreateTermWithUserSchema), async (c) => {
+  const body = (c as any).get("validatedBody") as z.infer<typeof CreateTermWithUserSchema>;
   const { createdBy, ...termData } = body;
   const result = await termService.createTerm(termData, createdBy);
 
@@ -188,14 +193,13 @@ termsRouter.get("/:id/history", async (c) => {
  * @returns {object} 409 - 用語が既にコンテキストに追加されている場合
  * @returns {object} 500 - サーバーエラー
  */
-termsRouter.post("/:id/contexts", async (c) => {
-  const termId = c.req.param("id");
-  const body = await c.req.json<Omit<AddTermToContextDto, "termId"> & { changedBy?: string }>();
+const AddTermToContextWithUserSchema = AddTermToContextDtoSchema.omit({ termId: true }).extend({
+  changedBy: z.string().uuid().optional(),
+});
 
-  // Validate required fields
-  if (!body.contextId || !body.definition) {
-    return c.json({ error: "Context ID and definition are required" }, 400);
-  }
+termsRouter.post("/:id/contexts", validateBody(AddTermToContextWithUserSchema), async (c) => {
+  const termId = c.req.param("id");
+  const body = (c as any).get("validatedBody") as z.infer<typeof AddTermToContextWithUserSchema>;
 
   const { changedBy, ...data } = body;
   const result = await termService.addTermToContext({ ...data, termId }, changedBy);

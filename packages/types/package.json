@@ -6,9 +6,15 @@
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",
-    "lint": "eslint . --ext .ts"
+    "lint": "eslint . --ext .ts",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest --coverage"
   },
   "devDependencies": {
     "typescript": "^5.3.0"
+  },
+  "dependencies": {
+    "zod": "^4.1.12"
   }
 }
