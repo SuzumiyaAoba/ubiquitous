@@ -1,4 +1,4 @@
-import { ReviewStatus } from '../entities';
+import type { ReviewStatus } from "../entities";
 
 /**
  * 用語レビューを実行するためのDTO
@@ -7,10 +7,10 @@ import { ReviewStatus } from '../entities';
  * チーム内でユビキタス言語の定義を保つために使用されます。
  */
 export interface PerformReviewDto {
-  /** レビュー対象の用語ID（必須） */
-  termId: string;
-  /** レビュー結果のステータス（必須）。承認、変更必要、棄却など */
-  status: ReviewStatus;
-  /** レビュー時の注記やコメント */
-  notes?: string;
+	/** レビュー対象の用語ID（必須） */
+	termId: string;
+	/** レビュー結果のステータス（必須）。承認、変更必要、棄却など */
+	status: ReviewStatus;
+	/** レビュー時の注記やコメント */
+	notes?: string;
 }

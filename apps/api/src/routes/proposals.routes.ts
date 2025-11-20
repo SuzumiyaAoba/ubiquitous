@@ -3,9 +3,13 @@
  * @description 新しい用語の提案作成、管理、承認/却下処理のエンドポイントを定義します。
  */
 
-import { Hono } from 'hono';
-import { discussionService } from '../services/discussion.service';
-import type { CreateTermProposalDto, UpdateTermProposalDto, ProposalStatus } from '../repositories/term-proposal.repository';
+import { Hono } from "hono";
+import type {
+	CreateTermProposalDto,
+	ProposalStatus,
+	UpdateTermProposalDto,
+} from "../repositories/term-proposal.repository";
+import { discussionService } from "../services/discussion.service";
 
 export const proposalsRouter = new Hono();
 
@@ -23,34 +27,43 @@ export const proposalsRouter = new Hono();
  * @returns {object} 409 - 同名の用語が既に存在する場合
  * @returns {object} 500 - サーバーエラー
  */
-proposalsRouter.post('/', async (c) => {
-  try {
-    const body = await c.req.json<CreateTermProposalDto>();
+proposalsRouter.post("/", async (c) => {
+	try {
+		const body = await c.req.json<CreateTermProposalDto>();
 
-    // Validate required fields
-    if (!body.name || !body.definition || !body.boundedContextId || !body.proposedBy) {
-      return c.json(
-        { error: 'name, definition, boundedContextId, and proposedBy are required' },
-        400
-      );
-    }
+		// Validate required fields
+		if (
+			!body.name ||
+			!body.definition ||
+			!body.boundedContextId ||
+			!body.proposedBy
+		) {
+			return c.json(
+				{
+					error:
+						"name, definition, boundedContextId, and proposedBy are required",
+				},
+				400,
+			);
+		}
 
-    const proposal = await discussionService.createProposal(body);
-    return c.json(proposal, 201);
-  } catch (error) {
-    console.error('Error creating proposal:', error);
-    const message = error instanceof Error ? error.message : 'Failed to create proposal';
+		const proposal = await discussionService.createProposal(body);
+		return c.json(proposal, 201);
+	} catch (error) {
+		console.error("Error creating proposal:", error);
+		const message =
+			error instanceof Error ? error.message : "Failed to create proposal";
 
-    if (error instanceof Error) {
-      if (error.message.includes('not found')) {
-        return c.json({ error: message }, 404);
-      } else if (error.message.includes('already exists')) {
-        return c.json({ error: message }, 409);
-      }
-    }
+		if (error instanceof Error) {
+			if (error.message.includes("not found")) {
+				return c.json({ error: message }, 404);
+			} else if (error.message.includes("already exists")) {
+				return c.json({ error: message }, 409);
+			}
+		}
 
-    return c.json({ error: message }, 500);
-  }
+		return c.json({ error: message }, 500);
+	}
 });
 
 /**
@@ -61,27 +74,34 @@ proposalsRouter.post('/', async (c) => {
  * @returns {object} 400 - 無効なステータス値
  * @returns {object} 500 - サーバーエラー
  */
-proposalsRouter.get('/', async (c) => {
-  try {
-    const status = c.req.query('status') as ProposalStatus | undefined;
+proposalsRouter.get("/", async (c) => {
+	try {
+		const status = c.req.query("status") as ProposalStatus | undefined;
 
-    // Validate status if provided
-    if (status) {
-      const validStatuses: ProposalStatus[] = ['pending', 'approved', 'rejected', 'on_hold'];
-      if (!validStatuses.includes(status)) {
-        return c.json(
-          { error: `Invalid status. Must be one of: ${validStatuses.join(', ')}` },
-          400
-        );
-      }
-    }
+		// Validate status if provided
+		if (status) {
+			const validStatuses: ProposalStatus[] = [
+				"pending",
+				"approved",
+				"rejected",
+				"on_hold",
+			];
+			if (!validStatuses.includes(status)) {
+				return c.json(
+					{
+						error: `Invalid status. Must be one of: ${validStatuses.join(", ")}`,
+					},
+					400,
+				);
+			}
+		}
 
-    const proposals = await discussionService.getAllProposals(status);
-    return c.json(proposals);
-  } catch (error) {
-    console.error('Error fetching proposals:', error);
-    return c.json({ error: 'Failed to fetch proposals' }, 500);
-  }
+		const proposals = await discussionService.getAllProposals(status);
+		return c.json(proposals);
+	} catch (error) {
+		console.error("Error fetching proposals:", error);
+		return c.json({ error: "Failed to fetch proposals" }, 500);
+	}
 });
 
 /**
@@ -92,19 +112,20 @@ proposalsRouter.get('/', async (c) => {
  * @returns {object} 404 - 提案が見つからない場合
  * @returns {object} 500 - サーバーエラー
  */
-proposalsRouter.get('/:id', async (c) => {
-  try {
-    const id = c.req.param('id');
-    const proposal = await discussionService.getProposalById(id);
-    return c.json(proposal);
-  } catch (error) {
-    console.error('Error fetching proposal:', error);
-    const message = error instanceof Error ? error.message : 'Failed to fetch proposal';
-    return c.json(
-      { error: message },
-      error instanceof Error && error.message.includes('not found') ? 404 : 500
-    );
-  }
+proposalsRouter.get("/:id", async (c) => {
+	try {
+		const id = c.req.param("id");
+		const proposal = await discussionService.getProposalById(id);
+		return c.json(proposal);
+	} catch (error) {
+		console.error("Error fetching proposal:", error);
+		const message =
+			error instanceof Error ? error.message : "Failed to fetch proposal";
+		return c.json(
+			{ error: message },
+			error instanceof Error && error.message.includes("not found") ? 404 : 500,
+		);
+	}
 });
 
 /**
@@ -117,27 +138,28 @@ proposalsRouter.get('/:id', async (c) => {
  * @returns {object} 404 - 提案が見つからない場合
  * @returns {object} 500 - サーバーエラー
  */
-proposalsRouter.put('/:id', async (c) => {
-  try {
-    const id = c.req.param('id');
-    const body = await c.req.json<UpdateTermProposalDto>();
+proposalsRouter.put("/:id", async (c) => {
+	try {
+		const id = c.req.param("id");
+		const body = await c.req.json<UpdateTermProposalDto>();
 
-    const updated = await discussionService.updateProposal(id, body);
-    return c.json(updated);
-  } catch (error) {
-    console.error('Error updating proposal:', error);
-    const message = error instanceof Error ? error.message : 'Failed to update proposal';
+		const updated = await discussionService.updateProposal(id, body);
+		return c.json(updated);
+	} catch (error) {
+		console.error("Error updating proposal:", error);
+		const message =
+			error instanceof Error ? error.message : "Failed to update proposal";
 
-    if (error instanceof Error) {
-      if (error.message.includes('not found')) {
-        return c.json({ error: message }, 404);
-      } else if (error.message.includes('Cannot update')) {
-        return c.json({ error: message }, 400);
-      }
-    }
+		if (error instanceof Error) {
+			if (error.message.includes("not found")) {
+				return c.json({ error: message }, 404);
+			} else if (error.message.includes("Cannot update")) {
+				return c.json({ error: message }, 400);
+			}
+		}
 
-    return c.json({ error: message }, 500);
-  }
+		return c.json({ error: message }, 500);
+	}
 });
 
 /**
@@ -151,31 +173,35 @@ proposalsRouter.put('/:id', async (c) => {
  * @returns {object} 404 - 提案が見つからない場合
  * @returns {object} 500 - サーバーエラー
  */
-proposalsRouter.post('/:id/approve', async (c) => {
-  try {
-    const id = c.req.param('id');
-    const body = await c.req.json<{ approvedBy: string }>();
+proposalsRouter.post("/:id/approve", async (c) => {
+	try {
+		const id = c.req.param("id");
+		const body = await c.req.json<{ approvedBy: string }>();
 
-    if (!body.approvedBy) {
-      return c.json({ error: 'approvedBy is required' }, 400);
-    }
+		if (!body.approvedBy) {
+			return c.json({ error: "approvedBy is required" }, 400);
+		}
 
-    const result = await discussionService.approveProposal(id, body.approvedBy);
-    return c.json(result);
-  } catch (error) {
-    console.error('Error approving proposal:', error);
-    const message = error instanceof Error ? error.message : 'Failed to approve proposal';
+		const result = await discussionService.approveProposal(id, body.approvedBy);
+		return c.json(result);
+	} catch (error) {
+		console.error("Error approving proposal:", error);
+		const message =
+			error instanceof Error ? error.message : "Failed to approve proposal";
 
-    if (error instanceof Error) {
-      if (error.message.includes('not found')) {
-        return c.json({ error: message }, 404);
-      } else if (error.message.includes('already') || error.message.includes('Cannot')) {
-        return c.json({ error: message }, 400);
-      }
-    }
+		if (error instanceof Error) {
+			if (error.message.includes("not found")) {
+				return c.json({ error: message }, 404);
+			} else if (
+				error.message.includes("already") ||
+				error.message.includes("Cannot")
+			) {
+				return c.json({ error: message }, 400);
+			}
+		}
 
-    return c.json({ error: message }, 500);
-  }
+		return c.json({ error: message }, 500);
+	}
 });
 
 /**
@@ -189,31 +215,38 @@ proposalsRouter.post('/:id/approve', async (c) => {
  * @returns {object} 404 - 提案が見つからない場合
  * @returns {object} 500 - サーバーエラー
  */
-proposalsRouter.post('/:id/reject', async (c) => {
-  try {
-    const id = c.req.param('id');
-    const body = await c.req.json<{ rejectionReason: string }>();
+proposalsRouter.post("/:id/reject", async (c) => {
+	try {
+		const id = c.req.param("id");
+		const body = await c.req.json<{ rejectionReason: string }>();
 
-    if (!body.rejectionReason) {
-      return c.json({ error: 'rejectionReason is required' }, 400);
-    }
+		if (!body.rejectionReason) {
+			return c.json({ error: "rejectionReason is required" }, 400);
+		}
 
-    const updated = await discussionService.rejectProposal(id, body.rejectionReason);
-    return c.json(updated);
-  } catch (error) {
-    console.error('Error rejecting proposal:', error);
-    const message = error instanceof Error ? error.message : 'Failed to reject proposal';
+		const updated = await discussionService.rejectProposal(
+			id,
+			body.rejectionReason,
+		);
+		return c.json(updated);
+	} catch (error) {
+		console.error("Error rejecting proposal:", error);
+		const message =
+			error instanceof Error ? error.message : "Failed to reject proposal";
 
-    if (error instanceof Error) {
-      if (error.message.includes('not found')) {
-        return c.json({ error: message }, 404);
-      } else if (error.message.includes('Cannot') || error.message.includes('already')) {
-        return c.json({ error: message }, 400);
-      }
-    }
+		if (error instanceof Error) {
+			if (error.message.includes("not found")) {
+				return c.json({ error: message }, 404);
+			} else if (
+				error.message.includes("Cannot") ||
+				error.message.includes("already")
+			) {
+				return c.json({ error: message }, 400);
+			}
+		}
 
-    return c.json({ error: message }, 500);
-  }
+		return c.json({ error: message }, 500);
+	}
 });
 
 /**
@@ -225,25 +258,26 @@ proposalsRouter.post('/:id/reject', async (c) => {
  * @returns {object} 404 - 提案が見つからない場合
  * @returns {object} 500 - サーバーエラー
  */
-proposalsRouter.post('/:id/hold', async (c) => {
-  try {
-    const id = c.req.param('id');
-    const updated = await discussionService.putProposalOnHold(id);
-    return c.json(updated);
-  } catch (error) {
-    console.error('Error putting proposal on hold:', error);
-    const message = error instanceof Error ? error.message : 'Failed to put proposal on hold';
+proposalsRouter.post("/:id/hold", async (c) => {
+	try {
+		const id = c.req.param("id");
+		const updated = await discussionService.putProposalOnHold(id);
+		return c.json(updated);
+	} catch (error) {
+		console.error("Error putting proposal on hold:", error);
+		const message =
+			error instanceof Error ? error.message : "Failed to put proposal on hold";
 
-    if (error instanceof Error) {
-      if (error.message.includes('not found')) {
-        return c.json({ error: message }, 404);
-      } else if (error.message.includes('Can only')) {
-        return c.json({ error: message }, 400);
-      }
-    }
+		if (error instanceof Error) {
+			if (error.message.includes("not found")) {
+				return c.json({ error: message }, 404);
+			} else if (error.message.includes("Can only")) {
+				return c.json({ error: message }, 400);
+			}
+		}
 
-    return c.json({ error: message }, 500);
-  }
+		return c.json({ error: message }, 500);
+	}
 });
 
 /**
@@ -254,17 +288,18 @@ proposalsRouter.post('/:id/hold', async (c) => {
  * @returns {object} 404 - 提案が見つからない場合
  * @returns {object} 500 - サーバーエラー
  */
-proposalsRouter.delete('/:id', async (c) => {
-  try {
-    const id = c.req.param('id');
-    await discussionService.deleteProposal(id);
-    return c.json({ message: 'Proposal deleted successfully' });
-  } catch (error) {
-    console.error('Error deleting proposal:', error);
-    const message = error instanceof Error ? error.message : 'Failed to delete proposal';
-    return c.json(
-      { error: message },
-      error instanceof Error && error.message.includes('not found') ? 404 : 500
-    );
-  }
+proposalsRouter.delete("/:id", async (c) => {
+	try {
+		const id = c.req.param("id");
+		await discussionService.deleteProposal(id);
+		return c.json({ message: "Proposal deleted successfully" });
+	} catch (error) {
+		console.error("Error deleting proposal:", error);
+		const message =
+			error instanceof Error ? error.message : "Failed to delete proposal";
+		return c.json(
+			{ error: message },
+			error instanceof Error && error.message.includes("not found") ? 404 : 500,
+		);
+	}
 });

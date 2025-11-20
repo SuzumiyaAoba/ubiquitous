@@ -5,7 +5,7 @@
  */
 
 import type { Context, Next } from "hono";
-import { z } from "zod";
+import type { z } from "zod";
 
 /**
  * リクエストボディをZodスキーマでバリデーションします
@@ -22,29 +22,34 @@ import { z } from "zod";
  * ```
  */
 export function validateBody<T extends z.ZodType>(schema: T) {
-  return async (c: Context, next: Next) => {
-    try {
-      const body = await c.req.json();
-      const validated = schema.parse(body);
-      c.set("validatedBody", validated);
-      await next();
-    } catch (error) {
-      // Check if error has errors property (duck typing for ZodError)
-      if (error && typeof error === "object" && "errors" in error && Array.isArray((error as any).errors)) {
-        return c.json(
-          {
-            error: "Validation failed",
-            details: (error as any).errors.map((err: any) => ({
-              path: err.path?.join?.(".") || String(err.path || ""),
-              message: err.message,
-            })),
-          },
-          400
-        );
-      }
-      return c.json({ error: "Invalid request body" }, 400);
-    }
-  };
+	return async (c: Context, next: Next) => {
+		try {
+			const body = await c.req.json();
+			const validated = schema.parse(body);
+			c.set("validatedBody", validated);
+			await next();
+		} catch (error) {
+			// Check if error has errors property (duck typing for ZodError)
+			if (
+				error &&
+				typeof error === "object" &&
+				"errors" in error &&
+				Array.isArray((error as any).errors)
+			) {
+				return c.json(
+					{
+						error: "Validation failed",
+						details: (error as any).errors.map((err: any) => ({
+							path: err.path?.join?.(".") || String(err.path || ""),
+							message: err.message,
+						})),
+					},
+					400,
+				);
+			}
+			return c.json({ error: "Invalid request body" }, 400);
+		}
+	};
 }
 
 /**
@@ -66,29 +71,34 @@ export function validateBody<T extends z.ZodType>(schema: T) {
  * ```
  */
 export function validateQuery<T extends z.ZodType>(schema: T) {
-  return async (c: Context, next: Next) => {
-    try {
-      const query = c.req.query();
-      const validated = schema.parse(query);
-      c.set("validatedQuery", validated);
-      await next();
-    } catch (error) {
-      // Check if error has errors property (duck typing for ZodError)
-      if (error && typeof error === "object" && "errors" in error && Array.isArray((error as any).errors)) {
-        return c.json(
-          {
-            error: "Query validation failed",
-            details: (error as any).errors.map((err: any) => ({
-              path: err.path?.join?.(".") || String(err.path || ""),
-              message: err.message,
-            })),
-          },
-          400
-        );
-      }
-      return c.json({ error: "Invalid query parameters" }, 400);
-    }
-  };
+	return async (c: Context, next: Next) => {
+		try {
+			const query = c.req.query();
+			const validated = schema.parse(query);
+			c.set("validatedQuery", validated);
+			await next();
+		} catch (error) {
+			// Check if error has errors property (duck typing for ZodError)
+			if (
+				error &&
+				typeof error === "object" &&
+				"errors" in error &&
+				Array.isArray((error as any).errors)
+			) {
+				return c.json(
+					{
+						error: "Query validation failed",
+						details: (error as any).errors.map((err: any) => ({
+							path: err.path?.join?.(".") || String(err.path || ""),
+							message: err.message,
+						})),
+					},
+					400,
+				);
+			}
+			return c.json({ error: "Invalid query parameters" }, 400);
+		}
+	};
 }
 
 /**
@@ -98,27 +108,32 @@ export function validateQuery<T extends z.ZodType>(schema: T) {
  * @returns Honoミドルウェア関数
  */
 export function validateParams<T extends z.ZodType>(schema: T) {
-  return async (c: Context, next: Next) => {
-    try {
-      const params = c.req.param();
-      const validated = schema.parse(params);
-      c.set("validatedParams", validated);
-      await next();
-    } catch (error) {
-      // Check if error has errors property (duck typing for ZodError)
-      if (error && typeof error === "object" && "errors" in error && Array.isArray((error as any).errors)) {
-        return c.json(
-          {
-            error: "Parameter validation failed",
-            details: (error as any).errors.map((err: any) => ({
-              path: err.path?.join?.(".") || String(err.path || ""),
-              message: err.message,
-            })),
-          },
-          400
-        );
-      }
-      return c.json({ error: "Invalid parameters" }, 400);
-    }
-  };
+	return async (c: Context, next: Next) => {
+		try {
+			const params = c.req.param();
+			const validated = schema.parse(params);
+			c.set("validatedParams", validated);
+			await next();
+		} catch (error) {
+			// Check if error has errors property (duck typing for ZodError)
+			if (
+				error &&
+				typeof error === "object" &&
+				"errors" in error &&
+				Array.isArray((error as any).errors)
+			) {
+				return c.json(
+					{
+						error: "Parameter validation failed",
+						details: (error as any).errors.map((err: any) => ({
+							path: err.path?.join?.(".") || String(err.path || ""),
+							message: err.message,
+						})),
+					},
+					400,
+				);
+			}
+			return c.json({ error: "Invalid parameters" }, 400);
+		}
+	};
 }

@@ -3,9 +3,9 @@
  * @description ユーザーの学習進度管理、必須用語の設定、学習パスの推奨などのエンドポイントを定義します。
  */
 
-import { Hono } from 'hono';
-import { onboardingService } from '../services/onboarding.service';
-import type { MarkLearnedDto } from '../repositories/user-learning.repository';
+import { Hono } from "hono";
+import type { MarkLearnedDto } from "../repositories/user-learning.repository";
+import { onboardingService } from "../services/onboarding.service";
 
 export const onboardingRouter = new Hono();
 
@@ -15,14 +15,14 @@ export const onboardingRouter = new Hono();
  * @returns {object[]} 200 - 必須用語の配列
  * @returns {object} 500 - サーバーエラー
  */
-onboardingRouter.get('/essential-terms', async (c) => {
-  try {
-    const essentialTerms = await onboardingService.getEssentialTerms();
-    return c.json(essentialTerms);
-  } catch (error) {
-    console.error('Error fetching essential terms:', error);
-    return c.json({ error: 'Failed to fetch essential terms' }, 500);
-  }
+onboardingRouter.get("/essential-terms", async (c) => {
+	try {
+		const essentialTerms = await onboardingService.getEssentialTerms();
+		return c.json(essentialTerms);
+	} catch (error) {
+		console.error("Error fetching essential terms:", error);
+		return c.json({ error: "Failed to fetch essential terms" }, 500);
+	}
 });
 
 /**
@@ -33,19 +33,22 @@ onboardingRouter.get('/essential-terms', async (c) => {
  * @returns {object} 404 - 用語が見つからない場合
  * @returns {object} 500 - サーバーエラー
  */
-onboardingRouter.put('/essential-terms/:id', async (c) => {
-  try {
-    const id = c.req.param('id');
-    const term = await onboardingService.markTermAsEssential(id);
-    return c.json(term);
-  } catch (error) {
-    console.error('Error marking term as essential:', error);
-    const message = error instanceof Error ? error.message : 'Failed to mark term as essential';
-    return c.json(
-      { error: message },
-      error instanceof Error && error.message.includes('not found') ? 404 : 500
-    );
-  }
+onboardingRouter.put("/essential-terms/:id", async (c) => {
+	try {
+		const id = c.req.param("id");
+		const term = await onboardingService.markTermAsEssential(id);
+		return c.json(term);
+	} catch (error) {
+		console.error("Error marking term as essential:", error);
+		const message =
+			error instanceof Error
+				? error.message
+				: "Failed to mark term as essential";
+		return c.json(
+			{ error: message },
+			error instanceof Error && error.message.includes("not found") ? 404 : 500,
+		);
+	}
 });
 
 /**
@@ -56,19 +59,22 @@ onboardingRouter.put('/essential-terms/:id', async (c) => {
  * @returns {object} 404 - 用語が見つからない場合
  * @returns {object} 500 - サーバーエラー
  */
-onboardingRouter.delete('/essential-terms/:id', async (c) => {
-  try {
-    const id = c.req.param('id');
-    const term = await onboardingService.unmarkTermAsEssential(id);
-    return c.json(term);
-  } catch (error) {
-    console.error('Error unmarking term as essential:', error);
-    const message = error instanceof Error ? error.message : 'Failed to unmark term as essential';
-    return c.json(
-      { error: message },
-      error instanceof Error && error.message.includes('not found') ? 404 : 500
-    );
-  }
+onboardingRouter.delete("/essential-terms/:id", async (c) => {
+	try {
+		const id = c.req.param("id");
+		const term = await onboardingService.unmarkTermAsEssential(id);
+		return c.json(term);
+	} catch (error) {
+		console.error("Error unmarking term as essential:", error);
+		const message =
+			error instanceof Error
+				? error.message
+				: "Failed to unmark term as essential";
+		return c.json(
+			{ error: message },
+			error instanceof Error && error.message.includes("not found") ? 404 : 500,
+		);
+	}
 });
 
 /**
@@ -82,25 +88,26 @@ onboardingRouter.delete('/essential-terms/:id', async (c) => {
  * @returns {object} 404 - ユーザーまたは用語が見つからない場合
  * @returns {object} 500 - サーバーエラー
  */
-onboardingRouter.post('/mark-learned', async (c) => {
-  try {
-    const body = await c.req.json<MarkLearnedDto>();
+onboardingRouter.post("/mark-learned", async (c) => {
+	try {
+		const body = await c.req.json<MarkLearnedDto>();
 
-    // Validate required fields
-    if (!body.userId || !body.termId) {
-      return c.json({ error: 'userId and termId are required' }, 400);
-    }
+		// Validate required fields
+		if (!body.userId || !body.termId) {
+			return c.json({ error: "userId and termId are required" }, 400);
+		}
 
-    const learned = await onboardingService.markTermAsLearned(body);
-    return c.json(learned, 201);
-  } catch (error) {
-    console.error('Error marking term as learned:', error);
-    const message = error instanceof Error ? error.message : 'Failed to mark term as learned';
-    return c.json(
-      { error: message },
-      error instanceof Error && error.message.includes('not found') ? 404 : 500
-    );
-  }
+		const learned = await onboardingService.markTermAsLearned(body);
+		return c.json(learned, 201);
+	} catch (error) {
+		console.error("Error marking term as learned:", error);
+		const message =
+			error instanceof Error ? error.message : "Failed to mark term as learned";
+		return c.json(
+			{ error: message },
+			error instanceof Error && error.message.includes("not found") ? 404 : 500,
+		);
+	}
 });
 
 /**
@@ -111,20 +118,22 @@ onboardingRouter.post('/mark-learned', async (c) => {
  * @returns {object} 200 - 削除成功メッセージ
  * @returns {object} 500 - サーバーエラー
  */
-onboardingRouter.delete('/mark-learned/:userId/:termId', async (c) => {
-  try {
-    const userId = c.req.param('userId');
-    const termId = c.req.param('termId');
+onboardingRouter.delete("/mark-learned/:userId/:termId", async (c) => {
+	try {
+		const userId = c.req.param("userId");
+		const termId = c.req.param("termId");
 
-    const result = await onboardingService.unmarkTermAsLearned(userId, termId);
-    if (!result) {
-      return c.json({ message: 'Learning record not found or already removed' });
-    }
-    return c.json({ message: 'Learning record removed successfully' });
-  } catch (error) {
-    console.error('Error unmarking term as learned:', error);
-    return c.json({ error: 'Failed to unmark term as learned' }, 500);
-  }
+		const result = await onboardingService.unmarkTermAsLearned(userId, termId);
+		if (!result) {
+			return c.json({
+				message: "Learning record not found or already removed",
+			});
+		}
+		return c.json({ message: "Learning record removed successfully" });
+	} catch (error) {
+		console.error("Error unmarking term as learned:", error);
+		return c.json({ error: "Failed to unmark term as learned" }, 500);
+	}
 });
 
 /**
@@ -134,15 +143,15 @@ onboardingRouter.delete('/mark-learned/:userId/:termId', async (c) => {
  * @returns {object} 200 - 学習進度情報オブジェクト
  * @returns {object} 500 - サーバーエラー
  */
-onboardingRouter.get('/progress/:userId', async (c) => {
-  try {
-    const userId = c.req.param('userId');
-    const progress = await onboardingService.getLearningProgress(userId);
-    return c.json(progress);
-  } catch (error) {
-    console.error('Error fetching learning progress:', error);
-    return c.json({ error: 'Failed to fetch learning progress' }, 500);
-  }
+onboardingRouter.get("/progress/:userId", async (c) => {
+	try {
+		const userId = c.req.param("userId");
+		const progress = await onboardingService.getLearningProgress(userId);
+		return c.json(progress);
+	} catch (error) {
+		console.error("Error fetching learning progress:", error);
+		return c.json({ error: "Failed to fetch learning progress" }, 500);
+	}
 });
 
 /**
@@ -152,15 +161,16 @@ onboardingRouter.get('/progress/:userId', async (c) => {
  * @returns {object} 200 - 推奨学習パス情報
  * @returns {object} 500 - サーバーエラー
  */
-onboardingRouter.get('/learning-path/:userId', async (c) => {
-  try {
-    const userId = c.req.param('userId');
-    const learningPath = await onboardingService.getRecommendedLearningPath(userId);
-    return c.json(learningPath);
-  } catch (error) {
-    console.error('Error fetching learning path:', error);
-    return c.json({ error: 'Failed to fetch learning path' }, 500);
-  }
+onboardingRouter.get("/learning-path/:userId", async (c) => {
+	try {
+		const userId = c.req.param("userId");
+		const learningPath =
+			await onboardingService.getRecommendedLearningPath(userId);
+		return c.json(learningPath);
+	} catch (error) {
+		console.error("Error fetching learning path:", error);
+		return c.json({ error: "Failed to fetch learning path" }, 500);
+	}
 });
 
 /**
@@ -172,22 +182,25 @@ onboardingRouter.get('/learning-path/:userId', async (c) => {
  * @returns {object} 400 - 無効なlimitパラメータ
  * @returns {object} 500 - サーバーエラー
  */
-onboardingRouter.get('/next-terms/:userId', async (c) => {
-  try {
-    const userId = c.req.param('userId');
-    const limitStr = c.req.query('limit');
-    const limit = limitStr ? parseInt(limitStr, 10) : 5;
+onboardingRouter.get("/next-terms/:userId", async (c) => {
+	try {
+		const userId = c.req.param("userId");
+		const limitStr = c.req.query("limit");
+		const limit = limitStr ? parseInt(limitStr, 10) : 5;
 
-    if (isNaN(limit) || limit < 1) {
-      return c.json({ error: 'Invalid limit parameter' }, 400);
-    }
+		if (Number.isNaN(limit) || limit < 1) {
+			return c.json({ error: "Invalid limit parameter" }, 400);
+		}
 
-    const nextTerms = await onboardingService.getNextRecommendedTerms(userId, limit);
-    return c.json(nextTerms);
-  } catch (error) {
-    console.error('Error fetching next recommended terms:', error);
-    return c.json({ error: 'Failed to fetch next recommended terms' }, 500);
-  }
+		const nextTerms = await onboardingService.getNextRecommendedTerms(
+			userId,
+			limit,
+		);
+		return c.json(nextTerms);
+	} catch (error) {
+		console.error("Error fetching next recommended terms:", error);
+		return c.json({ error: "Failed to fetch next recommended terms" }, 500);
+	}
 });
 
 /**
@@ -199,19 +212,22 @@ onboardingRouter.get('/next-terms/:userId', async (c) => {
  * @returns {object} 404 - ユーザーまたは用語が見つからない場合
  * @returns {object} 500 - サーバーエラー
  */
-onboardingRouter.get('/can-learn/:userId/:termId', async (c) => {
-  try {
-    const userId = c.req.param('userId');
-    const termId = c.req.param('termId');
+onboardingRouter.get("/can-learn/:userId/:termId", async (c) => {
+	try {
+		const userId = c.req.param("userId");
+		const termId = c.req.param("termId");
 
-    const canLearn = await onboardingService.canLearnTerm(userId, termId);
-    return c.json({ canLearn });
-  } catch (error) {
-    console.error('Error checking if user can learn term:', error);
-    const message = error instanceof Error ? error.message : 'Failed to check learning eligibility';
-    return c.json(
-      { error: message },
-      error instanceof Error && error.message.includes('not found') ? 404 : 500
-    );
-  }
+		const canLearn = await onboardingService.canLearnTerm(userId, termId);
+		return c.json({ canLearn });
+	} catch (error) {
+		console.error("Error checking if user can learn term:", error);
+		const message =
+			error instanceof Error
+				? error.message
+				: "Failed to check learning eligibility";
+		return c.json(
+			{ error: message },
+			error instanceof Error && error.message.includes("not found") ? 404 : 500,
+		);
+	}
 });

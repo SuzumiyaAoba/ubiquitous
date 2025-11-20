@@ -3,8 +3,8 @@
  * @description MeiliSearchを使用した用語検索、オートコンプリート、インデックス管理のエンドポイントを定義します。
  */
 
-import { Hono } from 'hono';
-import { searchService } from '../services/search.service';
+import { Hono } from "hono";
+import { searchService } from "../services/search.service";
 
 export const searchRouter = new Hono();
 
@@ -20,30 +20,30 @@ export const searchRouter = new Hono();
  * @returns {object} 400 - 検索クエリが指定されていない場合
  * @returns {object} 500 - サーバーエラー
  */
-searchRouter.get('/', async (c) => {
-  try {
-    const query = c.req.query('q') || '';
-    const limit = parseInt(c.req.query('limit') || '20', 10);
-    const offset = parseInt(c.req.query('offset') || '0', 10);
-    const contextId = c.req.query('contextId');
-    const status = c.req.query('status');
+searchRouter.get("/", async (c) => {
+	try {
+		const query = c.req.query("q") || "";
+		const limit = parseInt(c.req.query("limit") || "20", 10);
+		const offset = parseInt(c.req.query("offset") || "0", 10);
+		const contextId = c.req.query("contextId");
+		const status = c.req.query("status");
 
-    if (!query) {
-      return c.json({ error: 'Query parameter "q" is required' }, 400);
-    }
+		if (!query) {
+			return c.json({ error: 'Query parameter "q" is required' }, 400);
+		}
 
-    const results = await searchService.searchTerms(query, {
-      limit,
-      offset,
-      contextId,
-      status,
-    });
+		const results = await searchService.searchTerms(query, {
+			limit,
+			offset,
+			contextId,
+			status,
+		});
 
-    return c.json(results);
-  } catch (error) {
-    console.error('Error searching terms:', error);
-    return c.json({ error: 'Failed to search terms' }, 500);
-  }
+		return c.json(results);
+	} catch (error) {
+		console.error("Error searching terms:", error);
+		return c.json({ error: "Failed to search terms" }, 500);
+	}
 });
 
 /**
@@ -55,21 +55,21 @@ searchRouter.get('/', async (c) => {
  * @returns {object} 400 - 検索クエリが指定されていない場合
  * @returns {object} 500 - サーバーエラー
  */
-searchRouter.get('/suggestions', async (c) => {
-  try {
-    const query = c.req.query('q') || '';
-    const limit = parseInt(c.req.query('limit') || '5', 10);
+searchRouter.get("/suggestions", async (c) => {
+	try {
+		const query = c.req.query("q") || "";
+		const limit = parseInt(c.req.query("limit") || "5", 10);
 
-    if (!query) {
-      return c.json({ error: 'Query parameter "q" is required' }, 400);
-    }
+		if (!query) {
+			return c.json({ error: 'Query parameter "q" is required' }, 400);
+		}
 
-    const suggestions = await searchService.getSuggestions(query, limit);
-    return c.json(suggestions);
-  } catch (error) {
-    console.error('Error getting suggestions:', error);
-    return c.json({ error: 'Failed to get suggestions' }, 500);
-  }
+		const suggestions = await searchService.getSuggestions(query, limit);
+		return c.json(suggestions);
+	} catch (error) {
+		console.error("Error getting suggestions:", error);
+		return c.json({ error: "Failed to get suggestions" }, 500);
+	}
 });
 
 /**
@@ -78,17 +78,17 @@ searchRouter.get('/suggestions', async (c) => {
  * @returns {object} 200 - インデックス再構築結果（インデックスされた用語数）
  * @returns {object} 500 - サーバーエラー
  */
-searchRouter.post('/index/rebuild', async (c) => {
-  try {
-    const count = await searchService.rebuildIndex();
-    return c.json({
-      message: 'Index rebuilt successfully',
-      indexedTerms: count,
-    });
-  } catch (error) {
-    console.error('Error rebuilding index:', error);
-    return c.json({ error: 'Failed to rebuild index' }, 500);
-  }
+searchRouter.post("/index/rebuild", async (c) => {
+	try {
+		const count = await searchService.rebuildIndex();
+		return c.json({
+			message: "Index rebuilt successfully",
+			indexedTerms: count,
+		});
+	} catch (error) {
+		console.error("Error rebuilding index:", error);
+		return c.json({ error: "Failed to rebuild index" }, 500);
+	}
 });
 
 /**
@@ -97,14 +97,14 @@ searchRouter.post('/index/rebuild', async (c) => {
  * @returns {object} 200 - インデックス統計情報
  * @returns {object} 500 - サーバーエラー
  */
-searchRouter.get('/index/stats', async (c) => {
-  try {
-    const stats = await searchService.getIndexStats();
-    return c.json(stats);
-  } catch (error) {
-    console.error('Error getting index stats:', error);
-    return c.json({ error: 'Failed to get index stats' }, 500);
-  }
+searchRouter.get("/index/stats", async (c) => {
+	try {
+		const stats = await searchService.getIndexStats();
+		return c.json(stats);
+	} catch (error) {
+		console.error("Error getting index stats:", error);
+		return c.json({ error: "Failed to get index stats" }, 500);
+	}
 });
 
 /**
@@ -114,15 +114,15 @@ searchRouter.get('/index/stats', async (c) => {
  * @returns {object} 200 - インデックス登録成功メッセージ
  * @returns {object} 500 - サーバーエラー
  */
-searchRouter.post('/index/term/:id', async (c) => {
-  try {
-    const termId = c.req.param('id');
-    await searchService.indexTerm(termId);
-    return c.json({ message: 'Term indexed successfully' });
-  } catch (error) {
-    console.error('Error indexing term:', error);
-    return c.json({ error: 'Failed to index term' }, 500);
-  }
+searchRouter.post("/index/term/:id", async (c) => {
+	try {
+		const termId = c.req.param("id");
+		await searchService.indexTerm(termId);
+		return c.json({ message: "Term indexed successfully" });
+	} catch (error) {
+		console.error("Error indexing term:", error);
+		return c.json({ error: "Failed to index term" }, 500);
+	}
 });
 
 /**
@@ -131,19 +131,25 @@ searchRouter.post('/index/term/:id', async (c) => {
  * @returns {object} 200 - 接続状態が良好な場合
  * @returns {object} 503 - MeiliSearch に接続できない場合
  */
-searchRouter.get('/health', async (c) => {
-  try {
-    const isHealthy = await searchService.testConnection();
-    return c.json({
-      healthy: isHealthy,
-      service: 'MeiliSearch',
-    }, isHealthy ? 200 : 503);
-  } catch (error) {
-    console.error('Error checking MeiliSearch health:', error);
-    return c.json({
-      healthy: false,
-      service: 'MeiliSearch',
-      error: 'Connection failed',
-    }, 503);
-  }
+searchRouter.get("/health", async (c) => {
+	try {
+		const isHealthy = await searchService.testConnection();
+		return c.json(
+			{
+				healthy: isHealthy,
+				service: "MeiliSearch",
+			},
+			isHealthy ? 200 : 503,
+		);
+	} catch (error) {
+		console.error("Error checking MeiliSearch health:", error);
+		return c.json(
+			{
+				healthy: false,
+				service: "MeiliSearch",
+				error: "Connection failed",
+			},
+			503,
+		);
+	}
 });

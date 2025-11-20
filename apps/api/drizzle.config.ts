@@ -1,11 +1,13 @@
-import type { Config } from 'drizzle-kit';
-import 'dotenv/config';
+import type { Config } from "drizzle-kit";
+import "dotenv/config";
 
 export default {
-  schema: './src/db/schema/index.ts',
-  out: './src/db/migrations',
-  dialect: 'postgresql',
-  dbCredentials: {
-    url: process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/ubiquitous_language',
-  },
+	schema: "./src/db/schema/index.ts",
+	out: "./src/db/migrations",
+	dialect: "postgresql",
+	dbCredentials: {
+		url:
+			process.env.DATABASE_URL ||
+			"postgresql://postgres:postgres@localhost:5432/ubiquitous_language",
+	},
 } satisfies Config;

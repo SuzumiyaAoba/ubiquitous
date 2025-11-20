@@ -4,9 +4,13 @@
  * 関連用語の取得のエンドポイントを定義します。
  */
 
-import { Hono } from 'hono';
-import { relationshipService } from '../services/relationship.service';
-import type { CreateTermRelationshipDto, UpdateTermRelationshipDto, RelationshipType } from '../repositories/term-relationship.repository';
+import { Hono } from "hono";
+import type {
+	CreateTermRelationshipDto,
+	RelationshipType,
+	UpdateTermRelationshipDto,
+} from "../repositories/term-relationship.repository";
+import { relationshipService } from "../services/relationship.service";
 
 export const relationshipsRouter = new Hono();
 
@@ -23,45 +27,60 @@ export const relationshipsRouter = new Hono();
  * @returns {object} 409 - 既に同じ関係が存在する場合
  * @returns {object} 500 - サーバーエラー
  */
-relationshipsRouter.post('/', async (c) => {
-  try {
-    const body = await c.req.json<CreateTermRelationshipDto>();
+relationshipsRouter.post("/", async (c) => {
+	try {
+		const body = await c.req.json<CreateTermRelationshipDto>();
 
-    // Validate required fields
-    if (!body.sourceTermId || !body.targetTermId || !body.relationshipType) {
-      return c.json(
-        { error: 'sourceTermId, targetTermId, and relationshipType are required' },
-        400
-      );
-    }
+		// Validate required fields
+		if (!body.sourceTermId || !body.targetTermId || !body.relationshipType) {
+			return c.json(
+				{
+					error:
+						"sourceTermId, targetTermId, and relationshipType are required",
+				},
+				400,
+			);
+		}
 
-    // Validate relationship type
-    const validTypes: RelationshipType[] = ['synonym', 'antonym', 'related', 'parent', 'child'];
-    if (!validTypes.includes(body.relationshipType)) {
-      return c.json(
-        { error: `Invalid relationship type. Must be one of: ${validTypes.join(', ')}` },
-        400
-      );
-    }
+		// Validate relationship type
+		const validTypes: RelationshipType[] = [
+			"synonym",
+			"antonym",
+			"related",
+			"parent",
+			"child",
+		];
+		if (!validTypes.includes(body.relationshipType)) {
+			return c.json(
+				{
+					error: `Invalid relationship type. Must be one of: ${validTypes.join(", ")}`,
+				},
+				400,
+			);
+		}
 
-    const relationship = await relationshipService.createRelationship(body);
-    return c.json(relationship, 201);
-  } catch (error) {
-    console.error('Error creating relationship:', error);
-    const message = error instanceof Error ? error.message : 'Failed to create relationship';
+		const relationship = await relationshipService.createRelationship(body);
+		return c.json(relationship, 201);
+	} catch (error) {
+		console.error("Error creating relationship:", error);
+		const message =
+			error instanceof Error ? error.message : "Failed to create relationship";
 
-    if (error instanceof Error) {
-      if (error.message.includes('not found')) {
-        return c.json({ error: message }, 404);
-      } else if (error.message.includes('already exists')) {
-        return c.json({ error: message }, 409);
-      } else if (error.message.includes('circular dependency') || error.message.includes('itself')) {
-        return c.json({ error: message }, 400);
-      }
-    }
+		if (error instanceof Error) {
+			if (error.message.includes("not found")) {
+				return c.json({ error: message }, 404);
+			} else if (error.message.includes("already exists")) {
+				return c.json({ error: message }, 409);
+			} else if (
+				error.message.includes("circular dependency") ||
+				error.message.includes("itself")
+			) {
+				return c.json({ error: message }, 400);
+			}
+		}
 
-    return c.json({ error: message }, 500);
-  }
+		return c.json({ error: message }, 500);
+	}
 });
 
 /**
@@ -72,19 +91,20 @@ relationshipsRouter.post('/', async (c) => {
  * @returns {object} 404 - 関係が見つからない場合
  * @returns {object} 500 - サーバーエラー
  */
-relationshipsRouter.get('/:id', async (c) => {
-  try {
-    const id = c.req.param('id');
-    const relationship = await relationshipService.getRelationshipById(id);
-    return c.json(relationship);
-  } catch (error) {
-    console.error('Error fetching relationship:', error);
-    const message = error instanceof Error ? error.message : 'Failed to fetch relationship';
-    return c.json(
-      { error: message },
-      error instanceof Error && error.message.includes('not found') ? 404 : 500
-    );
-  }
+relationshipsRouter.get("/:id", async (c) => {
+	try {
+		const id = c.req.param("id");
+		const relationship = await relationshipService.getRelationshipById(id);
+		return c.json(relationship);
+	} catch (error) {
+		console.error("Error fetching relationship:", error);
+		const message =
+			error instanceof Error ? error.message : "Failed to fetch relationship";
+		return c.json(
+			{ error: message },
+			error instanceof Error && error.message.includes("not found") ? 404 : 500,
+		);
+	}
 });
 
 /**
@@ -98,38 +118,47 @@ relationshipsRouter.get('/:id', async (c) => {
  * @returns {object} 404 - 関係が見つからない場合
  * @returns {object} 500 - サーバーエラー
  */
-relationshipsRouter.put('/:id', async (c) => {
-  try {
-    const id = c.req.param('id');
-    const body = await c.req.json<UpdateTermRelationshipDto>();
+relationshipsRouter.put("/:id", async (c) => {
+	try {
+		const id = c.req.param("id");
+		const body = await c.req.json<UpdateTermRelationshipDto>();
 
-    // Validate relationship type if provided
-    if (body.relationshipType) {
-      const validTypes: RelationshipType[] = ['synonym', 'antonym', 'related', 'parent', 'child'];
-      if (!validTypes.includes(body.relationshipType)) {
-        return c.json(
-          { error: `Invalid relationship type. Must be one of: ${validTypes.join(', ')}` },
-          400
-        );
-      }
-    }
+		// Validate relationship type if provided
+		if (body.relationshipType) {
+			const validTypes: RelationshipType[] = [
+				"synonym",
+				"antonym",
+				"related",
+				"parent",
+				"child",
+			];
+			if (!validTypes.includes(body.relationshipType)) {
+				return c.json(
+					{
+						error: `Invalid relationship type. Must be one of: ${validTypes.join(", ")}`,
+					},
+					400,
+				);
+			}
+		}
 
-    const updated = await relationshipService.updateRelationship(id, body);
-    return c.json(updated);
-  } catch (error) {
-    console.error('Error updating relationship:', error);
-    const message = error instanceof Error ? error.message : 'Failed to update relationship';
+		const updated = await relationshipService.updateRelationship(id, body);
+		return c.json(updated);
+	} catch (error) {
+		console.error("Error updating relationship:", error);
+		const message =
+			error instanceof Error ? error.message : "Failed to update relationship";
 
-    if (error instanceof Error) {
-      if (error.message.includes('not found')) {
-        return c.json({ error: message }, 404);
-      } else if (error.message.includes('circular dependency')) {
-        return c.json({ error: message }, 400);
-      }
-    }
+		if (error instanceof Error) {
+			if (error.message.includes("not found")) {
+				return c.json({ error: message }, 404);
+			} else if (error.message.includes("circular dependency")) {
+				return c.json({ error: message }, 400);
+			}
+		}
 
-    return c.json({ error: message }, 500);
-  }
+		return c.json({ error: message }, 500);
+	}
 });
 
 /**
@@ -140,19 +169,20 @@ relationshipsRouter.put('/:id', async (c) => {
  * @returns {object} 404 - 関係が見つからない場合
  * @returns {object} 500 - サーバーエラー
  */
-relationshipsRouter.delete('/:id', async (c) => {
-  try {
-    const id = c.req.param('id');
-    await relationshipService.deleteRelationship(id);
-    return c.json({ message: 'Relationship deleted successfully' });
-  } catch (error) {
-    console.error('Error deleting relationship:', error);
-    const message = error instanceof Error ? error.message : 'Failed to delete relationship';
-    return c.json(
-      { error: message },
-      error instanceof Error && error.message.includes('not found') ? 404 : 500
-    );
-  }
+relationshipsRouter.delete("/:id", async (c) => {
+	try {
+		const id = c.req.param("id");
+		await relationshipService.deleteRelationship(id);
+		return c.json({ message: "Relationship deleted successfully" });
+	} catch (error) {
+		console.error("Error deleting relationship:", error);
+		const message =
+			error instanceof Error ? error.message : "Failed to delete relationship";
+		return c.json(
+			{ error: message },
+			error instanceof Error && error.message.includes("not found") ? 404 : 500,
+		);
+	}
 });
 
 /**
@@ -164,26 +194,30 @@ relationshipsRouter.delete('/:id', async (c) => {
  * @returns {object} 404 - 用語が見つからない場合
  * @returns {object} 500 - サーバーエラー
  */
-relationshipsRouter.get('/terms/:termId', async (c) => {
-  try {
-    const termId = c.req.param('termId');
-    const includeDetails = c.req.query('includeDetails') === 'true';
+relationshipsRouter.get("/terms/:termId", async (c) => {
+	try {
+		const termId = c.req.param("termId");
+		const includeDetails = c.req.query("includeDetails") === "true";
 
-    if (includeDetails) {
-      const result = await relationshipService.getTermWithRelationships(termId);
-      return c.json(result);
-    } else {
-      const relationships = await relationshipService.getRelationshipsForTerm(termId);
-      return c.json(relationships);
-    }
-  } catch (error) {
-    console.error('Error fetching term relationships:', error);
-    const message = error instanceof Error ? error.message : 'Failed to fetch term relationships';
-    return c.json(
-      { error: message },
-      error instanceof Error && error.message.includes('not found') ? 404 : 500
-    );
-  }
+		if (includeDetails) {
+			const result = await relationshipService.getTermWithRelationships(termId);
+			return c.json(result);
+		} else {
+			const relationships =
+				await relationshipService.getRelationshipsForTerm(termId);
+			return c.json(relationships);
+		}
+	} catch (error) {
+		console.error("Error fetching term relationships:", error);
+		const message =
+			error instanceof Error
+				? error.message
+				: "Failed to fetch term relationships";
+		return c.json(
+			{ error: message },
+			error instanceof Error && error.message.includes("not found") ? 404 : 500,
+		);
+	}
 });
 
 /**
@@ -195,27 +229,39 @@ relationshipsRouter.get('/terms/:termId', async (c) => {
  * @returns {object} 400 - 無効な関係タイプ
  * @returns {object} 500 - サーバーエラー
  */
-relationshipsRouter.get('/terms/:termId/type/:type', async (c) => {
-  try {
-    const termId = c.req.param('termId');
-    const type = c.req.param('type') as RelationshipType;
+relationshipsRouter.get("/terms/:termId/type/:type", async (c) => {
+	try {
+		const termId = c.req.param("termId");
+		const type = c.req.param("type") as RelationshipType;
 
-    // Validate relationship type
-    const validTypes: RelationshipType[] = ['synonym', 'antonym', 'related', 'parent', 'child'];
-    if (!validTypes.includes(type)) {
-      return c.json(
-        { error: `Invalid relationship type. Must be one of: ${validTypes.join(', ')}` },
-        400
-      );
-    }
+		// Validate relationship type
+		const validTypes: RelationshipType[] = [
+			"synonym",
+			"antonym",
+			"related",
+			"parent",
+			"child",
+		];
+		if (!validTypes.includes(type)) {
+			return c.json(
+				{
+					error: `Invalid relationship type. Must be one of: ${validTypes.join(", ")}`,
+				},
+				400,
+			);
+		}
 
-    const relatedTerms = await relationshipService.getRelatedTermsByType(termId, type);
-    return c.json(relatedTerms);
-  } catch (error) {
-    console.error('Error fetching related terms:', error);
-    const message = error instanceof Error ? error.message : 'Failed to fetch related terms';
-    return c.json({ error: message }, 500);
-  }
+		const relatedTerms = await relationshipService.getRelatedTermsByType(
+			termId,
+			type,
+		);
+		return c.json(relatedTerms);
+	} catch (error) {
+		console.error("Error fetching related terms:", error);
+		const message =
+			error instanceof Error ? error.message : "Failed to fetch related terms";
+		return c.json({ error: message }, 500);
+	}
 });
 
 /**
@@ -227,21 +273,25 @@ relationshipsRouter.get('/terms/:termId/type/:type', async (c) => {
  * @returns {object} 404 - 関係が見つからない場合
  * @returns {object} 500 - サーバーエラー
  */
-relationshipsRouter.delete('/between/:sourceId/:targetId', async (c) => {
-  try {
-    const sourceId = c.req.param('sourceId');
-    const targetId = c.req.param('targetId');
+relationshipsRouter.delete("/between/:sourceId/:targetId", async (c) => {
+	try {
+		const sourceId = c.req.param("sourceId");
+		const targetId = c.req.param("targetId");
 
-    await relationshipService.deleteRelationshipBetweenTerms(sourceId, targetId);
-    return c.json({ message: 'Relationship deleted successfully' });
-  } catch (error) {
-    console.error('Error deleting relationship:', error);
-    const message = error instanceof Error ? error.message : 'Failed to delete relationship';
-    return c.json(
-      { error: message },
-      error instanceof Error && error.message.includes('not found') ? 404 : 500
-    );
-  }
+		await relationshipService.deleteRelationshipBetweenTerms(
+			sourceId,
+			targetId,
+		);
+		return c.json({ message: "Relationship deleted successfully" });
+	} catch (error) {
+		console.error("Error deleting relationship:", error);
+		const message =
+			error instanceof Error ? error.message : "Failed to delete relationship";
+		return c.json(
+			{ error: message },
+			error instanceof Error && error.message.includes("not found") ? 404 : 500,
+		);
+	}
 });
 
 /**
@@ -251,15 +301,16 @@ relationshipsRouter.delete('/between/:sourceId/:targetId', async (c) => {
  * @returns {object} 200 - 図表データ（ノードとエッジを含むオブジェクト）
  * @returns {object} 500 - サーバーエラー
  */
-relationshipsRouter.get('/contexts/:contextId/diagram', async (c) => {
-  try {
-    const contextId = c.req.param('contextId');
-    const diagramData = await relationshipService.getDiagramDataForContext(contextId);
-    return c.json(diagramData);
-  } catch (error) {
-    console.error('Error fetching diagram data:', error);
-    return c.json({ error: 'Failed to fetch diagram data' }, 500);
-  }
+relationshipsRouter.get("/contexts/:contextId/diagram", async (c) => {
+	try {
+		const contextId = c.req.param("contextId");
+		const diagramData =
+			await relationshipService.getDiagramDataForContext(contextId);
+		return c.json(diagramData);
+	} catch (error) {
+		console.error("Error fetching diagram data:", error);
+		return c.json({ error: "Failed to fetch diagram data" }, 500);
+	}
 });
 
 /**
@@ -269,13 +320,13 @@ relationshipsRouter.get('/contexts/:contextId/diagram', async (c) => {
  * @returns {object} 200 - 階層構造を表すオブジェクト
  * @returns {object} 500 - サーバーエラー
  */
-relationshipsRouter.get('/hierarchy', async (c) => {
-  try {
-    const rootTermId = c.req.query('rootTermId');
-    const hierarchy = await relationshipService.getTermHierarchy(rootTermId);
-    return c.json(hierarchy);
-  } catch (error) {
-    console.error('Error fetching hierarchy:', error);
-    return c.json({ error: 'Failed to fetch hierarchy' }, 500);
-  }
+relationshipsRouter.get("/hierarchy", async (c) => {
+	try {
+		const rootTermId = c.req.query("rootTermId");
+		const hierarchy = await relationshipService.getTermHierarchy(rootTermId);
+		return c.json(hierarchy);
+	} catch (error) {
+		console.error("Error fetching hierarchy:", error);
+		return c.json({ error: "Failed to fetch hierarchy" }, 500);
+	}
 });
