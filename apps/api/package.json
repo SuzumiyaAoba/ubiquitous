@@ -18,7 +18,7 @@
 	"dependencies": {
 		"@hono/node-server": "^1.8.0",
 		"@ubiquitous/types": "*",
-		"dotenv": "^16.4.0",
+		"dotenv": "^17.2.3",
 		"drizzle-kit": "^0.31.7",
 		"drizzle-orm": "^0.44.7",
 		"es-toolkit": "^1.42.0",
