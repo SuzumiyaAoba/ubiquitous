@@ -4,17 +4,17 @@
  * AI分析によって検出された類似する用語を表します。
  */
 export interface SimilarTerm {
-  /** 用語ID */
-  termId: string;
+	/** 用語ID */
+	termId: string;
 
-  /** 用語名 */
-  termName: string;
+	/** 用語名 */
+	termName: string;
 
-  /** 類似度（0-1） */
-  similarity: number;
+	/** 類似度（0-1） */
+	similarity: number;
 
-  /** 類似と判断した理由 */
-  reason: string;
+	/** 類似と判断した理由 */
+	reason: string;
 }
 
 /**
@@ -24,35 +24,35 @@ export interface SimilarTerm {
  * 明瞭性、一貫性、改善提案、Q&Aなどの分析タイプをサポートします。
  */
 export interface AIAnalysis {
-  /** 分析の一意識別子 */
-  id: string;
+	/** 分析の一意識別子 */
+	id: string;
 
-  /** 分析対象の用語ID（オプション） */
-  termId?: string;
+	/** 分析対象の用語ID（オプション） */
+	termId?: string;
 
-  /** 分析対象の提案ID（オプション） */
-  proposalId?: string;
+	/** 分析対象の提案ID（オプション） */
+	proposalId?: string;
 
-  /** 分析の種類 */
-  analysisType: 'clarity' | 'consistency' | 'suggestion' | 'qa';
+	/** 分析の種類 */
+	analysisType: "clarity" | "consistency" | "suggestion" | "qa";
 
-  /** 分析への入力テキスト */
-  input: string;
+	/** 分析への入力テキスト */
+	input: string;
 
-  /** 分析結果の出力 */
-  output: string;
+	/** 分析結果の出力 */
+	output: string;
 
-  /** 明瞭性スコア（0-100、オプション） */
-  clarityScore?: number;
+	/** 明瞭性スコア（0-100、オプション） */
+	clarityScore?: number;
 
-  /** 改善提案の配列 */
-  suggestions: string[];
+	/** 改善提案の配列 */
+	suggestions: string[];
 
-  /** 類似用語の配列 */
-  similarTerms: SimilarTerm[];
+	/** 類似用語の配列 */
+	similarTerms: SimilarTerm[];
 
-  /** 分析実施日時 */
-  analyzedAt: Date;
+	/** 分析実施日時 */
+	analyzedAt: Date;
 }
 
 /**
@@ -61,14 +61,14 @@ export interface AIAnalysis {
  * 用語定義の明瞭性に関する問題を表します。
  */
 export interface ClarityIssue {
-  /** 問題の種類 */
-  type: 'ambiguity' | 'vagueness' | 'complexity' | 'missing_context';
+	/** 問題の種類 */
+	type: "ambiguity" | "vagueness" | "complexity" | "missing_context";
 
-  /** 問題の説明 */
-  description: string;
+	/** 問題の説明 */
+	description: string;
 
-  /** 深刻度 */
-  severity: 'low' | 'medium' | 'high';
+	/** 深刻度 */
+	severity: "low" | "medium" | "high";
 }
 
 /**
@@ -77,14 +77,14 @@ export interface ClarityIssue {
  * 用語定義の明瞭性分析結果を表します。
  */
 export interface ClarityAnalysis {
-  /** 明瞭性スコア（0-100） */
-  score: number;
+	/** 明瞭性スコア（0-100） */
+	score: number;
 
-  /** 検出された問題の配列 */
-  issues: ClarityIssue[];
+	/** 検出された問題の配列 */
+	issues: ClarityIssue[];
 
-  /** 改善提案の配列 */
-  suggestions: string[];
+	/** 改善提案の配列 */
+	suggestions: string[];
 }
 
 /**
@@ -93,14 +93,14 @@ export interface ClarityAnalysis {
  * 用語間の矛盾や競合を表します。
  */
 export interface Conflict {
-  /** 競合する用語のID */
-  conflictingTermId: string;
+	/** 競合する用語のID */
+	conflictingTermId: string;
 
-  /** 競合する用語の名前 */
-  conflictingTermName: string;
+	/** 競合する用語の名前 */
+	conflictingTermName: string;
 
-  /** 競合の理由 */
-  reason: string;
+	/** 競合の理由 */
+	reason: string;
 }
 
 /**
@@ -109,12 +109,12 @@ export interface Conflict {
  * 用語の一貫性チェック結果を表します。
  */
 export interface ConsistencyCheck {
-  /** 一貫性があるかどうか */
-  isConsistent: boolean;
+	/** 一貫性があるかどうか */
+	isConsistent: boolean;
 
-  /** 検出された競合の配列 */
-  conflicts: Conflict[];
+	/** 検出された競合の配列 */
+	conflicts: Conflict[];
 
-  /** 推奨事項の配列 */
-  recommendations: string[];
+	/** 推奨事項の配列 */
+	recommendations: string[];
 }

@@ -1,17 +1,24 @@
 // APIクライアントのPublic API
-export { apiClient, ApiError } from "./client";
+
 export type { ApiRequestOptions } from "./client";
+export { ApiError, apiClient } from "./client";
 
 export { contextsApi } from "./contexts";
-export { termsApi } from "./terms";
-export type { TermSearchOptions } from "./terms";
-export { searchApi } from "./search";
-export type { SearchOptions, SearchResult, Suggestion, IndexStats, HealthStatus } from "./search";
-export { relationshipsApi } from "./relationships";
-export { discussionsApi } from "./discussions";
 export type {
-  CreateThreadDto,
-  UpdateThreadDto,
-  CreateCommentDto,
-  ThreadSearchOptions,
+	CreateCommentDto,
+	CreateThreadDto,
+	ThreadSearchOptions,
+	UpdateThreadDto,
 } from "./discussions";
+export { discussionsApi } from "./discussions";
+export { relationshipsApi } from "./relationships";
+export type {
+	HealthStatus,
+	IndexStats,
+	SearchOptions,
+	SearchResult,
+	Suggestion,
+} from "./search";
+export { searchApi } from "./search";
+export type { TermSearchOptions } from "./terms";
+export { termsApi } from "./terms";

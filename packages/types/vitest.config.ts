@@ -1,9 +1,9 @@
 import { defineConfig } from "vitest/config";
 
 export default defineConfig({
-  test: {
-    globals: true,
-    environment: "node",
-    exclude: ["**/node_modules/**", "**/dist/**", "**/*.config.ts"],
-  },
+	test: {
+		globals: true,
+		environment: "node",
+		exclude: ["**/node_modules/**", "**/dist/**", "**/*.config.ts"],
+	},
 });

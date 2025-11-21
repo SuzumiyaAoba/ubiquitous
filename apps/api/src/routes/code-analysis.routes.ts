@@ -3,8 +3,8 @@
  * @description コードのアップロード、分析、レポート生成などのエンドポイントを定義します。
  */
 
-import { Hono } from 'hono';
-import { codeAnalysisService } from '../services/code-analysis.service';
+import { Hono } from "hono";
+import { codeAnalysisService } from "../services/code-analysis.service";
 
 export const codeAnalysisRouter = new Hono();
 
@@ -19,31 +19,35 @@ export const codeAnalysisRouter = new Hono();
  * @returns {object} 400 - 必須フィールドが不足している場合
  * @returns {object} 500 - サーバーエラー
  */
-codeAnalysisRouter.post('/upload', async (c) => {
-  try {
-    const body = await c.req.json<{
-      fileName: string;
-      code: string;
-      uploadedBy: string;
-    }>();
+codeAnalysisRouter.post("/upload", async (c) => {
+	try {
+		const body = await c.req.json<{
+			fileName: string;
+			code: string;
+			uploadedBy: string;
+		}>();
 
-    // Validate required fields
-    if (!body.fileName || !body.code || !body.uploadedBy) {
-      return c.json({ error: 'fileName, code, and uploadedBy are required' }, 400);
-    }
+		// Validate required fields
+		if (!body.fileName || !body.code || !body.uploadedBy) {
+			return c.json(
+				{ error: "fileName, code, and uploadedBy are required" },
+				400,
+			);
+		}
 
-    const analysisId = await codeAnalysisService.analyzeCode(
-      body.fileName,
-      body.code,
-      body.uploadedBy
-    );
+		const analysisId = await codeAnalysisService.analyzeCode(
+			body.fileName,
+			body.code,
+			body.uploadedBy,
+		);
 
-    return c.json({ analysisId }, 201);
-  } catch (error) {
-    console.error('Error analyzing code:', error);
-    const message = error instanceof Error ? error.message : 'Failed to analyze code';
-    return c.json({ error: message }, 500);
-  }
+		return c.json({ analysisId }, 201);
+	} catch (error) {
+		console.error("Error analyzing code:", error);
+		const message =
+			error instanceof Error ? error.message : "Failed to analyze code";
+		return c.json({ error: message }, 500);
+	}
 });
 
 /**
@@ -54,20 +58,23 @@ codeAnalysisRouter.post('/upload', async (c) => {
  * @returns {object} 404 - 分析が見つからない場合
  * @returns {object} 500 - サーバーエラー
  */
-codeAnalysisRouter.get('/:id/report', async (c) => {
-  try {
-    const id = c.req.param('id');
+codeAnalysisRouter.get("/:id/report", async (c) => {
+	try {
+		const id = c.req.param("id");
 
-    const report = await codeAnalysisService.getReport(id);
+		const report = await codeAnalysisService.getReport(id);
 
-    if (!report) {
-      return c.json({ error: 'Analysis not found' }, 404);
-    }
+		if (!report) {
+			return c.json({ error: "Analysis not found" }, 404);
+		}
 
-    return c.json(report);
-  } catch (error) {
-    console.error('Error fetching analysis report:', error);
-    const message = error instanceof Error ? error.message : 'Failed to fetch analysis report';
-    return c.json({ error: message }, 500);
-  }
+		return c.json(report);
+	} catch (error) {
+		console.error("Error fetching analysis report:", error);
+		const message =
+			error instanceof Error
+				? error.message
+				: "Failed to fetch analysis report";
+		return c.json({ error: message }, 500);
+	}
 });

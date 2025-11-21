@@ -4,15 +4,15 @@
  * およびコメント機能のエンドポイントを定義します。
  */
 
-import { Hono } from 'hono';
-import { discussionService } from '../services/discussion.service';
+import { Hono } from "hono";
 import type {
-  CreateDiscussionThreadDto,
-  UpdateDiscussionThreadDto,
-  CreateCommentDto,
-  UpdateCommentDto,
-  ThreadStatus,
-} from '../repositories/discussion.repository';
+	CreateCommentDto,
+	CreateDiscussionThreadDto,
+	ThreadStatus,
+	UpdateCommentDto,
+	UpdateDiscussionThreadDto,
+} from "../repositories/discussion.repository";
+import { discussionService } from "../services/discussion.service";
 
 export const discussionsRouter = new Hono();
 
@@ -31,29 +31,33 @@ export const discussionsRouter = new Hono();
  * @returns {object} 404 - 関連する用語またはプロポーザルが見つからない場合
  * @returns {object} 500 - サーバーエラー
  */
-discussionsRouter.post('/threads', async (c) => {
-  try {
-    const body = await c.req.json<CreateDiscussionThreadDto>();
+discussionsRouter.post("/threads", async (c) => {
+	try {
+		const body = await c.req.json<CreateDiscussionThreadDto>();
 
-    // Validate required fields
-    if (!body.title || !body.createdBy) {
-      return c.json({ error: 'title and createdBy are required' }, 400);
-    }
+		// Validate required fields
+		if (!body.title || !body.createdBy) {
+			return c.json({ error: "title and createdBy are required" }, 400);
+		}
 
-    if (!body.termId && !body.proposalId) {
-      return c.json({ error: 'Either termId or proposalId must be provided' }, 400);
-    }
+		if (!body.termId && !body.proposalId) {
+			return c.json(
+				{ error: "Either termId or proposalId must be provided" },
+				400,
+			);
+		}
 
-    const thread = await discussionService.createThread(body);
-    return c.json(thread, 201);
-  } catch (error) {
-    console.error('Error creating thread:', error);
-    const message = error instanceof Error ? error.message : 'Failed to create thread';
-    return c.json(
-      { error: message },
-      error instanceof Error && error.message.includes('not found') ? 404 : 500
-    );
-  }
+		const thread = await discussionService.createThread(body);
+		return c.json(thread, 201);
+	} catch (error) {
+		console.error("Error creating thread:", error);
+		const message =
+			error instanceof Error ? error.message : "Failed to create thread";
+		return c.json(
+			{ error: message },
+			error instanceof Error && error.message.includes("not found") ? 404 : 500,
+		);
+	}
 });
 
 /**
@@ -67,41 +71,44 @@ discussionsRouter.post('/threads', async (c) => {
  * @returns {object} 404 - コンテキスト指定時にコンテキストが見つからない場合
  * @returns {object} 500 - サーバーエラー
  */
-discussionsRouter.get('/threads', async (c) => {
-  try {
-    const status = c.req.query('status') as ThreadStatus | undefined;
-    const termId = c.req.query('termId');
-    const proposalId = c.req.query('proposalId');
+discussionsRouter.get("/threads", async (c) => {
+	try {
+		const status = c.req.query("status") as ThreadStatus | undefined;
+		const termId = c.req.query("termId");
+		const proposalId = c.req.query("proposalId");
 
-    // Validate status if provided
-    if (status) {
-      const validStatuses: ThreadStatus[] = ['open', 'closed'];
-      if (!validStatuses.includes(status)) {
-        return c.json(
-          { error: `Invalid status. Must be one of: ${validStatuses.join(', ')}` },
-          400
-        );
-      }
-    }
+		// Validate status if provided
+		if (status) {
+			const validStatuses: ThreadStatus[] = ["open", "closed"];
+			if (!validStatuses.includes(status)) {
+				return c.json(
+					{
+						error: `Invalid status. Must be one of: ${validStatuses.join(", ")}`,
+					},
+					400,
+				);
+			}
+		}
 
-    let threads;
-    if (termId) {
-      threads = await discussionService.getThreadsForTerm(termId);
-    } else if (proposalId) {
-      threads = await discussionService.getThreadsForProposal(proposalId);
-    } else {
-      threads = await discussionService.getAllThreads(status);
-    }
+		let threads;
+		if (termId) {
+			threads = await discussionService.getThreadsForTerm(termId);
+		} else if (proposalId) {
+			threads = await discussionService.getThreadsForProposal(proposalId);
+		} else {
+			threads = await discussionService.getAllThreads(status);
+		}
 
-    return c.json(threads);
-  } catch (error) {
-    console.error('Error fetching threads:', error);
-    const message = error instanceof Error ? error.message : 'Failed to fetch threads';
-    return c.json(
-      { error: message },
-      error instanceof Error && error.message.includes('not found') ? 404 : 500
-    );
-  }
+		return c.json(threads);
+	} catch (error) {
+		console.error("Error fetching threads:", error);
+		const message =
+			error instanceof Error ? error.message : "Failed to fetch threads";
+		return c.json(
+			{ error: message },
+			error instanceof Error && error.message.includes("not found") ? 404 : 500,
+		);
+	}
 });
 
 /**
@@ -113,21 +120,22 @@ discussionsRouter.get('/threads', async (c) => {
  * @returns {object} 404 - スレッドが見つからない場合
  * @returns {object} 500 - サーバーエラー
  */
-discussionsRouter.get('/threads/:id', async (c) => {
-  try {
-    const id = c.req.param('id');
-    const includeComments = c.req.query('includeComments') === 'true';
+discussionsRouter.get("/threads/:id", async (c) => {
+	try {
+		const id = c.req.param("id");
+		const includeComments = c.req.query("includeComments") === "true";
 
-    const thread = await discussionService.getThreadById(id, includeComments);
-    return c.json(thread);
-  } catch (error) {
-    console.error('Error fetching thread:', error);
-    const message = error instanceof Error ? error.message : 'Failed to fetch thread';
-    return c.json(
-      { error: message },
-      error instanceof Error && error.message.includes('not found') ? 404 : 500
-    );
-  }
+		const thread = await discussionService.getThreadById(id, includeComments);
+		return c.json(thread);
+	} catch (error) {
+		console.error("Error fetching thread:", error);
+		const message =
+			error instanceof Error ? error.message : "Failed to fetch thread";
+		return c.json(
+			{ error: message },
+			error instanceof Error && error.message.includes("not found") ? 404 : 500,
+		);
+	}
 });
 
 /**
@@ -141,32 +149,35 @@ discussionsRouter.get('/threads/:id', async (c) => {
  * @returns {object} 404 - スレッドが見つからない場合
  * @returns {object} 500 - サーバーエラー
  */
-discussionsRouter.put('/threads/:id', async (c) => {
-  try {
-    const id = c.req.param('id');
-    const body = await c.req.json<UpdateDiscussionThreadDto>();
+discussionsRouter.put("/threads/:id", async (c) => {
+	try {
+		const id = c.req.param("id");
+		const body = await c.req.json<UpdateDiscussionThreadDto>();
 
-    // Validate status if provided
-    if (body.status) {
-      const validStatuses: ThreadStatus[] = ['open', 'closed'];
-      if (!validStatuses.includes(body.status)) {
-        return c.json(
-          { error: `Invalid status. Must be one of: ${validStatuses.join(', ')}` },
-          400
-        );
-      }
-    }
+		// Validate status if provided
+		if (body.status) {
+			const validStatuses: ThreadStatus[] = ["open", "closed"];
+			if (!validStatuses.includes(body.status)) {
+				return c.json(
+					{
+						error: `Invalid status. Must be one of: ${validStatuses.join(", ")}`,
+					},
+					400,
+				);
+			}
+		}
 
-    const updated = await discussionService.updateThread(id, body);
-    return c.json(updated);
-  } catch (error) {
-    console.error('Error updating thread:', error);
-    const message = error instanceof Error ? error.message : 'Failed to update thread';
-    return c.json(
-      { error: message },
-      error instanceof Error && error.message.includes('not found') ? 404 : 500
-    );
-  }
+		const updated = await discussionService.updateThread(id, body);
+		return c.json(updated);
+	} catch (error) {
+		console.error("Error updating thread:", error);
+		const message =
+			error instanceof Error ? error.message : "Failed to update thread";
+		return c.json(
+			{ error: message },
+			error instanceof Error && error.message.includes("not found") ? 404 : 500,
+		);
+	}
 });
 
 /**
@@ -177,19 +188,20 @@ discussionsRouter.put('/threads/:id', async (c) => {
  * @returns {object} 404 - スレッドが見つからない場合
  * @returns {object} 500 - サーバーエラー
  */
-discussionsRouter.post('/threads/:id/close', async (c) => {
-  try {
-    const id = c.req.param('id');
-    const updated = await discussionService.closeThread(id);
-    return c.json(updated);
-  } catch (error) {
-    console.error('Error closing thread:', error);
-    const message = error instanceof Error ? error.message : 'Failed to close thread';
-    return c.json(
-      { error: message },
-      error instanceof Error && error.message.includes('not found') ? 404 : 500
-    );
-  }
+discussionsRouter.post("/threads/:id/close", async (c) => {
+	try {
+		const id = c.req.param("id");
+		const updated = await discussionService.closeThread(id);
+		return c.json(updated);
+	} catch (error) {
+		console.error("Error closing thread:", error);
+		const message =
+			error instanceof Error ? error.message : "Failed to close thread";
+		return c.json(
+			{ error: message },
+			error instanceof Error && error.message.includes("not found") ? 404 : 500,
+		);
+	}
 });
 
 /**
@@ -200,19 +212,20 @@ discussionsRouter.post('/threads/:id/close', async (c) => {
  * @returns {object} 404 - スレッドが見つからない場合
  * @returns {object} 500 - サーバーエラー
  */
-discussionsRouter.post('/threads/:id/reopen', async (c) => {
-  try {
-    const id = c.req.param('id');
-    const updated = await discussionService.reopenThread(id);
-    return c.json(updated);
-  } catch (error) {
-    console.error('Error reopening thread:', error);
-    const message = error instanceof Error ? error.message : 'Failed to reopen thread';
-    return c.json(
-      { error: message },
-      error instanceof Error && error.message.includes('not found') ? 404 : 500
-    );
-  }
+discussionsRouter.post("/threads/:id/reopen", async (c) => {
+	try {
+		const id = c.req.param("id");
+		const updated = await discussionService.reopenThread(id);
+		return c.json(updated);
+	} catch (error) {
+		console.error("Error reopening thread:", error);
+		const message =
+			error instanceof Error ? error.message : "Failed to reopen thread";
+		return c.json(
+			{ error: message },
+			error instanceof Error && error.message.includes("not found") ? 404 : 500,
+		);
+	}
 });
 
 /**
@@ -223,19 +236,20 @@ discussionsRouter.post('/threads/:id/reopen', async (c) => {
  * @returns {object} 404 - スレッドが見つからない場合
  * @returns {object} 500 - サーバーエラー
  */
-discussionsRouter.delete('/threads/:id', async (c) => {
-  try {
-    const id = c.req.param('id');
-    await discussionService.deleteThread(id);
-    return c.json({ message: 'Thread deleted successfully' });
-  } catch (error) {
-    console.error('Error deleting thread:', error);
-    const message = error instanceof Error ? error.message : 'Failed to delete thread';
-    return c.json(
-      { error: message },
-      error instanceof Error && error.message.includes('not found') ? 404 : 500
-    );
-  }
+discussionsRouter.delete("/threads/:id", async (c) => {
+	try {
+		const id = c.req.param("id");
+		await discussionService.deleteThread(id);
+		return c.json({ message: "Thread deleted successfully" });
+	} catch (error) {
+		console.error("Error deleting thread:", error);
+		const message =
+			error instanceof Error ? error.message : "Failed to delete thread";
+		return c.json(
+			{ error: message },
+			error instanceof Error && error.message.includes("not found") ? 404 : 500,
+		);
+	}
 });
 
 // ===== コメントエンドポイント =====
@@ -252,31 +266,35 @@ discussionsRouter.delete('/threads/:id', async (c) => {
  * @returns {object} 404 - スレッドが見つからない場合
  * @returns {object} 500 - サーバーエラー
  */
-discussionsRouter.post('/comments', async (c) => {
-  try {
-    const body = await c.req.json<CreateCommentDto>();
+discussionsRouter.post("/comments", async (c) => {
+	try {
+		const body = await c.req.json<CreateCommentDto>();
 
-    // Validate required fields
-    if (!body.threadId || !body.content || !body.postedBy) {
-      return c.json({ error: 'threadId, content, and postedBy are required' }, 400);
-    }
+		// Validate required fields
+		if (!body.threadId || !body.content || !body.postedBy) {
+			return c.json(
+				{ error: "threadId, content, and postedBy are required" },
+				400,
+			);
+		}
 
-    const comment = await discussionService.addComment(body);
-    return c.json(comment, 201);
-  } catch (error) {
-    console.error('Error adding comment:', error);
-    const message = error instanceof Error ? error.message : 'Failed to add comment';
+		const comment = await discussionService.addComment(body);
+		return c.json(comment, 201);
+	} catch (error) {
+		console.error("Error adding comment:", error);
+		const message =
+			error instanceof Error ? error.message : "Failed to add comment";
 
-    if (error instanceof Error) {
-      if (error.message.includes('not found')) {
-        return c.json({ error: message }, 404);
-      } else if (error.message.includes('closed')) {
-        return c.json({ error: message }, 400);
-      }
-    }
+		if (error instanceof Error) {
+			if (error.message.includes("not found")) {
+				return c.json({ error: message }, 404);
+			} else if (error.message.includes("closed")) {
+				return c.json({ error: message }, 400);
+			}
+		}
 
-    return c.json({ error: message }, 500);
-  }
+		return c.json({ error: message }, 500);
+	}
 });
 
 /**
@@ -287,19 +305,20 @@ discussionsRouter.post('/comments', async (c) => {
  * @returns {object} 404 - スレッドが見つからない場合
  * @returns {object} 500 - サーバーエラー
  */
-discussionsRouter.get('/threads/:threadId/comments', async (c) => {
-  try {
-    const threadId = c.req.param('threadId');
-    const comments = await discussionService.getCommentsForThread(threadId);
-    return c.json(comments);
-  } catch (error) {
-    console.error('Error fetching comments:', error);
-    const message = error instanceof Error ? error.message : 'Failed to fetch comments';
-    return c.json(
-      { error: message },
-      error instanceof Error && error.message.includes('not found') ? 404 : 500
-    );
-  }
+discussionsRouter.get("/threads/:threadId/comments", async (c) => {
+	try {
+		const threadId = c.req.param("threadId");
+		const comments = await discussionService.getCommentsForThread(threadId);
+		return c.json(comments);
+	} catch (error) {
+		console.error("Error fetching comments:", error);
+		const message =
+			error instanceof Error ? error.message : "Failed to fetch comments";
+		return c.json(
+			{ error: message },
+			error instanceof Error && error.message.includes("not found") ? 404 : 500,
+		);
+	}
 });
 
 /**
@@ -310,19 +329,20 @@ discussionsRouter.get('/threads/:threadId/comments', async (c) => {
  * @returns {object} 404 - コメントが見つからない場合
  * @returns {object} 500 - サーバーエラー
  */
-discussionsRouter.get('/comments/:id', async (c) => {
-  try {
-    const id = c.req.param('id');
-    const comment = await discussionService.getCommentById(id);
-    return c.json(comment);
-  } catch (error) {
-    console.error('Error fetching comment:', error);
-    const message = error instanceof Error ? error.message : 'Failed to fetch comment';
-    return c.json(
-      { error: message },
-      error instanceof Error && error.message.includes('not found') ? 404 : 500
-    );
-  }
+discussionsRouter.get("/comments/:id", async (c) => {
+	try {
+		const id = c.req.param("id");
+		const comment = await discussionService.getCommentById(id);
+		return c.json(comment);
+	} catch (error) {
+		console.error("Error fetching comment:", error);
+		const message =
+			error instanceof Error ? error.message : "Failed to fetch comment";
+		return c.json(
+			{ error: message },
+			error instanceof Error && error.message.includes("not found") ? 404 : 500,
+		);
+	}
 });
 
 /**
@@ -338,39 +358,40 @@ discussionsRouter.get('/comments/:id', async (c) => {
  * @returns {object} 404 - コメントが見つからない場合
  * @returns {object} 500 - サーバーエラー
  */
-discussionsRouter.put('/comments/:id', async (c) => {
-  try {
-    const id = c.req.param('id');
-    const body = await c.req.json<UpdateCommentDto & { userId: string }>();
+discussionsRouter.put("/comments/:id", async (c) => {
+	try {
+		const id = c.req.param("id");
+		const body = await c.req.json<UpdateCommentDto & { userId: string }>();
 
-    if (!body.content) {
-      return c.json({ error: 'content is required' }, 400);
-    }
+		if (!body.content) {
+			return c.json({ error: "content is required" }, 400);
+		}
 
-    if (!body.userId) {
-      return c.json({ error: 'userId is required' }, 400);
-    }
+		if (!body.userId) {
+			return c.json({ error: "userId is required" }, 400);
+		}
 
-    const updated = await discussionService.updateComment(
-      id,
-      { content: body.content },
-      body.userId
-    );
-    return c.json(updated);
-  } catch (error) {
-    console.error('Error updating comment:', error);
-    const message = error instanceof Error ? error.message : 'Failed to update comment';
+		const updated = await discussionService.updateComment(
+			id,
+			{ content: body.content },
+			body.userId,
+		);
+		return c.json(updated);
+	} catch (error) {
+		console.error("Error updating comment:", error);
+		const message =
+			error instanceof Error ? error.message : "Failed to update comment";
 
-    if (error instanceof Error) {
-      if (error.message.includes('not found')) {
-        return c.json({ error: message }, 404);
-      } else if (error.message.includes('only')) {
-        return c.json({ error: message }, 403);
-      }
-    }
+		if (error instanceof Error) {
+			if (error.message.includes("not found")) {
+				return c.json({ error: message }, 404);
+			} else if (error.message.includes("only")) {
+				return c.json({ error: message }, 403);
+			}
+		}
 
-    return c.json({ error: message }, 500);
-  }
+		return c.json({ error: message }, 500);
+	}
 });
 
 /**
@@ -384,29 +405,30 @@ discussionsRouter.put('/comments/:id', async (c) => {
  * @returns {object} 404 - コメントが見つからない場合
  * @returns {object} 500 - サーバーエラー
  */
-discussionsRouter.delete('/comments/:id', async (c) => {
-  try {
-    const id = c.req.param('id');
-    const userId = c.req.query('userId');
+discussionsRouter.delete("/comments/:id", async (c) => {
+	try {
+		const id = c.req.param("id");
+		const userId = c.req.query("userId");
 
-    if (!userId) {
-      return c.json({ error: 'userId query parameter is required' }, 400);
-    }
+		if (!userId) {
+			return c.json({ error: "userId query parameter is required" }, 400);
+		}
 
-    await discussionService.deleteComment(id, userId);
-    return c.json({ message: 'Comment deleted successfully' });
-  } catch (error) {
-    console.error('Error deleting comment:', error);
-    const message = error instanceof Error ? error.message : 'Failed to delete comment';
+		await discussionService.deleteComment(id, userId);
+		return c.json({ message: "Comment deleted successfully" });
+	} catch (error) {
+		console.error("Error deleting comment:", error);
+		const message =
+			error instanceof Error ? error.message : "Failed to delete comment";
 
-    if (error instanceof Error) {
-      if (error.message.includes('not found')) {
-        return c.json({ error: message }, 404);
-      } else if (error.message.includes('only')) {
-        return c.json({ error: message }, 403);
-      }
-    }
+		if (error instanceof Error) {
+			if (error.message.includes("not found")) {
+				return c.json({ error: message }, 404);
+			} else if (error.message.includes("only")) {
+				return c.json({ error: message }, 403);
+			}
+		}
 
-    return c.json({ error: message }, 500);
-  }
+		return c.json({ error: message }, 500);
+	}
 });

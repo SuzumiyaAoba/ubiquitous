@@ -5,5 +5,5 @@
  * すべてのZodスキーマをエクスポートします。
  */
 
-export * from "./term.schema";
 export * from "./context.schema";
+export * from "./term.schema";

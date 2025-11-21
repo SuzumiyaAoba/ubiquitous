@@ -1,4 +1,4 @@
-export { db, closeConnection, testConnection } from './connection';
-export { dbConfig, validateDbConfig } from './config';
-export { runMigrations } from './migrate';
-export * from './schema';
+export { dbConfig, validateDbConfig } from "./config";
+export { closeConnection, db, testConnection } from "./connection";
+export { runMigrations } from "./migrate";
+export * from "./schema";
