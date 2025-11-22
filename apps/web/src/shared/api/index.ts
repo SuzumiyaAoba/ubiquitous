@@ -3,6 +3,16 @@
 export type { ApiRequestOptions } from "./client";
 export { ApiError, apiClient } from "./client";
 
+export type {
+	AllMetrics,
+	CoverageMetrics,
+	ExportFormat,
+	SystemMetrics,
+	TopProposer,
+	TopReviewer,
+	UserActivityMetrics,
+} from "./analytics";
+export { analyticsApi } from "./analytics";
 export { contextsApi } from "./contexts";
 export type {
 	CreateCommentDto,
