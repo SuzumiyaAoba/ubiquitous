@@ -61,6 +61,12 @@ export default function RootLayout({
 								>
 									ディスカッション
 								</Link>
+								<Link
+									href="/onboarding"
+									className="inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-500 hover:text-gray-900"
+								>
+									オンボーディング
+								</Link>
 							</div>
 						</div>
 					</div>

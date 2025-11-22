@@ -15,6 +15,14 @@ export type {
 export { analyticsApi } from "./analytics";
 export { contextsApi } from "./contexts";
 export type {
+	LearningLevel,
+	LearningPath,
+	LearningProgress,
+	MarkLearnedDto,
+	UserLearning,
+} from "./onboarding";
+export { onboardingApi } from "./onboarding";
+export type {
 	CreateCommentDto,
 	CreateThreadDto,
 	ThreadSearchOptions,
